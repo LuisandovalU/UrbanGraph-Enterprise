@@ -70,6 +70,16 @@ st.markdown("""
     div.stButton > button:hover { background-color: #501633; }
     #MainMenu, footer, header {visibility: hidden;}
     .block-container { padding-top: 2rem !important; }
+
+    /* Forzar visibilidad en etiquetas de métricas */
+    [data-testid="stMetricLabel"] {
+        color: #64748B !important;
+    }
+
+    /* Forzar visibilidad en el valor de la métrica si también se pierde */
+    [data-testid="stMetricValue"] {
+        color: #0F172A !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
