@@ -97,6 +97,12 @@ def cargar_y_procesar_grafo():
 
 # --- 5. INTERFAZ DE USUARIO ---
 
+# Inicialización de variables de búsqueda (Scope Global)
+direccion_orig = ""
+direccion_dest = ""
+origen_label = "Punto de Inicio"
+destino_label = "Punto de Fin"
+
 # HEADER
 logo_b64 = get_base64_image_cached("logo.jpg") or get_base64_image_cached("icono_u.jpg")
 img_tag = f'<img src="data:image/png;base64,{logo_b64}" class="logo-img">' if logo_b64 else ''
@@ -134,6 +140,8 @@ with col_sidebar:
                 # Guardar en session_state para persistencia durante el procesamiento
                 st.session_state["c_orig"] = c_orig
                 st.session_state["c_dest"] = c_dest
+                st.session_state["origen_label"] = direccion_orig
+                st.session_state["destino_label"] = direccion_dest
                 st.session_state["rutas_calculadas"] = True
             except Exception as ge_error:
                 st.error(f"📍 No encontré esa dirección: {ge_error}. Intenta ser más específico.")
@@ -233,8 +241,11 @@ with col_main:
                 folium.PolyLine([c_orig, node_orig_coords], color='#166534', weight=7, opacity=0.9).add_to(m)
                 folium.PolyLine([c_dest, node_dest_coords], color='#166534', weight=7, opacity=0.9).add_to(m)
             
-            folium.Marker(c_orig, popup=f"<b>{origen}</b>", icon=folium.Icon(color="black", icon="play", prefix="fa")).add_to(m)
-            folium.Marker(c_dest, popup=f"<b>{destino}</b>", icon=folium.Icon(color="green", icon="flag", prefix="fa")).add_to(m)
+            orig_lbl = st.session_state.get("origen_label", "Origen")
+            dest_lbl = st.session_state.get("destino_label", "Destino")
+
+            folium.Marker(c_orig, popup=f"<b>{orig_lbl}</b>", icon=folium.Icon(color="black", icon="play", prefix="fa")).add_to(m)
+            folium.Marker(c_dest, popup=f"<b>{dest_lbl}</b>", icon=folium.Icon(color="green", icon="flag", prefix="fa")).add_to(m)
             
             # --- AQUÍ ESTÁ EL AJUSTE DEL MAPA ---
             # padding=(50, 50) da aire a los lados.
