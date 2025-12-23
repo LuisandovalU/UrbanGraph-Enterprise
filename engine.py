@@ -1,6 +1,10 @@
 import osmnx as ox
 import networkx as nx
 
+# Configuración profesional del caché (Sustituye al decorador antiguo)
+ox.settings.use_cache = True
+ox.settings.cache_folder = "./cache"
+
 # Configuración del Perfil de Riesgo (Fórmula Sandoval)
 RISK_PROFILE = {
     "WEIGHTS": {
@@ -17,7 +21,6 @@ RISK_PROFILE = {
 
 def cargar_grafo_seguro():
     """Descarga y prepara el grafo base."""
-    ox.settings.use_cache = True
     ox.settings.useful_tags_way = ['name', 'highway', 'length']
     return ox.graph_from_place(RISK_PROFILE["LOCATION"], network_type="walk")
 
@@ -81,7 +84,6 @@ def obtener_analisis_multi_ruta(G, coords_orig, coords_dest, hurry_factor=50.0, 
         "nodes": (n_orig, n_dest)
     }
 
-@ox.cache.http_cache
 def extraer_puntos_interes(location=RISK_PROFILE["LOCATION"]):
     """Extrae nombres de calles y lugares clave para auto-completado."""
     try:
