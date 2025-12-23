@@ -49,7 +49,7 @@ st.markdown("""
     html, body, [data-testid="stAppViewContainer"] {
         overflow: hidden;
         height: 100vh;
-        background-color: #0F172A; /* Dark mode base */
+        background-color: #0F172A;
     }
     .block-container {
         padding: 0.5rem 1rem !important;
@@ -59,28 +59,42 @@ st.markdown("""
 
     .stApp { background-color: #0F172A; font-family: 'Manrope', sans-serif; color: #F8FAFC; }
     
-    .sidebar-content { height: 95vh; overflow-y: auto; padding-right: 10px; }
+    .sidebar-content { 
+        height: calc(100vh - 40px); 
+        overflow-y: auto; 
+        padding-right: 15px;
+    }
 
-    .header-container { display: flex; align-items: center; gap: 15px; padding-bottom: 10px; border-bottom: 1px solid #1E293B; margin-bottom: 15px; }
-    .logo-img { width: 50px; height: 50px; object-fit: contain; border-radius: 8px; border: 1px solid #334155; }
-    .brand-title { font-size: 1.8rem; font-weight: 800; color: #F8FAFC; line-height: 1; margin: 0; }
-    .brand-subtitle { font-size: 0.8rem; color: #94A3B8; }
+    .header-container { 
+        display: flex; 
+        align-items: center; 
+        gap: 12px; 
+        padding-bottom: 8px; 
+        border-bottom: 1px solid #1E293B; 
+        margin-bottom: 10px; 
+    }
+    .logo-img { width: 45px; height: 45px; object-fit: contain; border-radius: 6px; border: 1px solid #334155; }
+    .brand-title { font-size: 1.6rem; font-weight: 800; color: #F8FAFC; line-height: 1; margin: 0; letter-spacing: -0.5px; }
+    .brand-subtitle { font-size: 0.7rem; color: #94A3B8; font-weight: 500; }
 
-    .result-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-    .result-card { background: #1E293B; border: 1px solid #334155; border-radius: 8px; padding: 12px; }
-    .card-label { font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: #94A3B8; }
-    .card-value { font-size: 1.4rem; font-weight: 700; color: #F8FAFC; }
+    .result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
+    .result-card { background: #1E293B; border: 1px solid #334155; border-radius: 6px; padding: 10px; }
+    .card-label { font-size: 0.6rem; text-transform: uppercase; font-weight: 700; color: #64748B; display: block; margin-bottom: 2px; }
+    .card-value { font-size: 1.2rem; font-weight: 700; color: #F8FAFC; }
     
-    .status-badge { font-size: 0.6rem; font-weight: 700; padding: 2px 5px; border-radius: 3px; }
+    .status-badge { font-size: 0.55rem; font-weight: 800; padding: 1px 4px; border-radius: 2px; }
     .badge-info { background: #0EA5E9; color: white; }
     .badge-success { background: #10B981; color: white; }
     .badge-danger { background: #EF4444; color: white; }
 
-    .map-container { height: 94vh; border-radius: 12px; overflow: hidden; border: 1px solid #334155; }
+    .map-container { height: 700px; border-radius: 10px; overflow: hidden; border: 1px solid #334155; position: relative; }
 
-    /* Observability Panel */
-    .observability-panel { background: #0F172A; border: 1px solid #1E293B; border-radius: 8px; padding: 10px; margin-top: 15px; }
-    .obs-item { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 5px; color: #94A3B8; }
+    /* Compact UI for Tactical Mode */
+    .stSlider > div [data-baseweb="slider"] { margin-bottom: 0px; }
+    .stSelectbox { margin-bottom: -10px; }
+    
+    .observability-panel { background: #0F172A; border: 1px solid #1E293B; border-radius: 6px; padding: 8px; margin-top: 10px; }
+    .obs-item { display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 3px; color: #94A3B8; }
     .obs-value { font-weight: 700; color: #F8FAFC; }
 </style>
 """, unsafe_allow_html=True)
@@ -166,7 +180,7 @@ if "incidentes" not in st.session_state:
 
 # --- 6. LAYOUT ---
 
-col_side, col_map = st.columns([1, 3], gap="small")
+col_side, col_map = st.columns([0.3, 0.7], gap="small")
 
 with col_side:
     logo_b64 = get_base64_image_cached("logo.jpg") or get_base64_image_cached("icono_u.jpg")
@@ -325,9 +339,9 @@ with col_map:
                 except: continue
 
             m.fit_bounds([st.session_state["c_orig"], st.session_state["c_dest"]], padding=(100, 100))
-            st_folium(m, width=None, height=900, returned_objects=[])
+            st_folium(m, width=None, height=700, returned_objects=[])
         except Exception as e:
             st.error("⚠️ Error al renderizar capas dinámicas. Mostrando mapa base de contingencia.")
-            m_base = folium.Map(tiles='CartoDB dark_matter', attr='UrbanOS Base')
-            st_folium(m_base, width=None, height=900, returned_objects=[])
+            m_base = folium.Map(tiles='CartoDB dark_matter', attr='UrbanGraph Base')
+            st_folium(m_base, width=None, height=700, returned_objects=[])
             logger.error(f"UI Force Render Error: {e}")
