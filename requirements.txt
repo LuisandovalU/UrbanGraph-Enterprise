@@ -9,3 +9,4 @@ pydantic
 pytest
 scikit-learn
 psutil
+scikit-learn

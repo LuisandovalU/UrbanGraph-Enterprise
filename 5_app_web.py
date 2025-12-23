@@ -341,28 +341,30 @@ with col_main:
             orig_lbl = st.session_state.get("origen_label", "Origen")
             dest_lbl = st.session_state.get("destino_label", "Destino")
 
-            # Capas de lugares fijos con Iconos Pro
+            # Capas de lugares fijos con Iconos Pro (Blindado)
             for nombre, info in COORDENADAS_FIJAS.items():
-                tipo = info.get("tipo", "lugar")
-                coords = info["coords"]
+                tipo_lugar = info.get("tipo", "punto_interes")
+                coords = info.get("coords")
                 
-                # Configuración de iconos segura
-                if tipo == "metro":
-                    icon_color, icon_name = "orange", "subway"
-                elif tipo == "metrobus":
-                    icon_color, icon_name = "red", "bus"
-                elif tipo == "trolebus":
-                    icon_color, icon_name = "blue", "bolt"
-                elif tipo == "parque":
-                    icon_color, icon_name = "green", "leaf"
+                if not coords: continue  # Saltar si no hay coordenadas
+                
+                # Lógica de iconos mejorada (Fail-safe)
+                if tipo_lugar == "metro":
+                    icon_data = {"color": "orange", "icon": "subway"}
+                elif tipo_lugar == "metrobus":
+                    icon_data = {"color": "red", "icon": "bus"}
+                elif tipo_lugar == "trolebus":
+                    icon_data = {"color": "blue", "icon": "bolt"}
+                elif tipo_lugar == "parque":
+                    icon_data = {"color": "green", "icon": "leaf"}
                 else:
-                    icon_color, icon_name = "gray", "map-marker"
+                    icon_data = {"color": "gray", "icon": "map-marker"}
 
                 folium.Marker(
                     location=coords,
-                    popup=f"<b>{nombre}</b>",
-                    icon=folium.Icon(color=icon_color, icon=icon_name, prefix="fa"),
-                    tooltip=f"{tipo.capitalize()} - Pto. Inteligente"
+                    popup=f"<b>{nombre}</b> ({tipo_lugar.capitalize()})",
+                    icon=folium.Icon(color=icon_data["color"], icon=icon_data["icon"], prefix="fa"),
+                    tooltip=f"{tipo_lugar.capitalize()} - Pto. Inteligente"
                 ).add_to(m)
 
             # Capas de transporte dinámico (OSM)
@@ -371,15 +373,16 @@ with col_main:
             
             for est in estaciones_osm:
                 # Evitar duplicar si ya está en fijos (por nombre aproximado)
-                if any(fijo.lower() in est['name'].lower() for fijo in COORDENADAS_FIJAS.keys()): continue
+                if any(fijo.lower() in est.get('name', '').lower() for fijo in COORDENADAS_FIJAS.keys()): continue
                 
-                icon_name = icon_map_pro.get(est['tipo'], "info-circle")
+                tipo_osm = est.get('tipo', 'desconocido')
+                icon_name = icon_map_pro.get(tipo_osm, "info-circle")
                 
                 folium.Marker(
-                    [est['lat'], est['lon']],
-                    icon=folium.Icon(color=est['color'], icon=icon_name, prefix="fa"),
-                    popup=f"<b>{est['name']}</b>",
-                    tooltip=f"{est['tipo']} OSM Pro"
+                    [est.get('lat', 0), est.get('lon', 0)],
+                    icon=folium.Icon(color=est.get('color', 'gray'), icon=icon_name, prefix="fa"),
+                    popup=f"<b>{est.get('name', 'Sin nombre')}</b>",
+                    tooltip=f"{tipo_osm} OSM Pro"
                 ).add_to(m)
 
             # Marcadores de Ruta Específica

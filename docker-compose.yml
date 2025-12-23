@@ -4,11 +4,10 @@ services:
     container_name: urbangraph-api
     ports:
       - "8000:8000"
-    volumes:
-      - .:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
     environment:
       - PYTHONUNBUFFERED=1
+      - URBANGRAPH_TOKEN=sandoval-enterprise-token-2025
 
   webapp:
     build: .
