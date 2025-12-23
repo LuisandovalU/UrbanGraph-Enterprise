@@ -107,29 +107,29 @@ def obtener_sugerencias():
     # Asegurar que los puntos fijos estén al inicio
     return puntos_fijos + [s for s in sugs if s not in puntos_fijos]
 
-# Diccionario Global de Coordenadas Fijas (Base de Datos Maestra)
+# Diccionario Global de Coordenadas Fijas (Base de Datos Maestra Estructurada)
 COORDENADAS_FIJAS = {
     # Metro
-    "Metro Centro Médico": (19.4072, -99.1545),
-    "Metro Etiopía": (19.3958, -99.1557),
-    "Metro Eugenia": (19.3853, -99.1551),
-    "Metro División del Norte": (19.3796, -99.1593),
-    "Metro Zapata": (19.3703, -99.1751),
-    "Metro Mixcoac": (19.3761, -99.1876),
-    "Metro Insurgentes Sur": (19.3741, -99.1791),
-    "Metro Hospital 20 de Noviembre": (19.3732, -99.1706),
+    "Metro Zapata (L3/L12)": {"coords": (19.3703, -99.1751), "tipo": "metro"},
+    "Metro Centro Médico (L3/L9)": {"coords": (19.4072, -99.1545), "tipo": "metro"},
+    "Metro Etiopía (L3)": {"coords": (19.3958, -99.1557), "tipo": "metro"},
+    "Metro Eugenia (L3)": {"coords": (19.3853, -99.1551), "tipo": "metro"},
+    "Metro División del Norte (L3)": {"coords": (19.3796, -99.1593), "tipo": "metro"},
+    "Metro Mixcoac (L7/L12)": {"coords": (19.3761, -99.1876), "tipo": "metro"},
+    "Metro Insurgentes Sur (L12)": {"coords": (19.3741, -99.1791), "tipo": "metro"},
+    "Metro Hospital 20 de Noviembre (L12)": {"coords": (19.3732, -99.1706), "tipo": "metro"},
     # Metrobús
-    "MB Col. del Valle": (19.3905, -99.1764),
-    "MB Parque Hundido": (19.3779, -99.1783),
-    "MB Félix Cuevas": (19.3731, -99.1787),
-    "MB Nápoles": (19.3934, -99.1754),
+    "MB Col. del Valle (L1)": {"coords": (19.3905, -99.1764), "tipo": "metrobus"},
+    "MB Parque Hundido (L1)": {"coords": (19.3779, -99.1783), "tipo": "metrobus"},
+    "MB Félix Cuevas (L1)": {"coords": (19.3731, -99.1787), "tipo": "metrobus"},
+    "MB Nápoles (L1)": {"coords": (19.3934, -99.1754), "tipo": "metrobus"},
     # Trolebús
-    "Trolebús Eje Central - Vertiz": (19.3932, -99.1432),
-    "Trolebús Eje Central - Zapata": (19.3705, -99.1435),
+    "Trol. Eje Central - Vertiz": {"coords": (19.3932, -99.1432), "tipo": "trolebus"},
+    "Trol. Eje Central - Zapata": {"coords": (19.3705, -99.1435), "tipo": "trolebus"},
     # Lugares
-    "Parque de los Venados": (19.3722, -99.1567),
-    "WTC Ciudad de México": (19.3934, -99.1747),
-    "Parque Hundido": (19.3783, -99.1788)
+    "Parque de los Venados": {"coords": (19.3722, -99.1567), "tipo": "parque"},
+    "WTC Ciudad de México": {"coords": (19.3934, -99.1747), "tipo": "lugar"},
+    "Parque Hundido": {"coords": (19.3783, -99.1788), "tipo": "parque"}
 }
 
 @st.cache_data(show_spinner=False)
@@ -196,8 +196,11 @@ with col_sidebar:
             try:
                 # Lógica de Resolución de Coordenadas (Híbrida: Fija + Geocode)
                 with st.spinner("Resolviendo coordenadas geográficas..."):
-                    c_orig = COORDENADAS_FIJAS.get(direccion_orig) or ox.geocode(f"{direccion_orig}, Benito Juárez, CDMX, Mexico")
-                    c_dest = COORDENADAS_FIJAS.get(direccion_dest) or ox.geocode(f"{direccion_dest}, Benito Juárez, CDMX, Mexico")
+                    info_orig = COORDENADAS_FIJAS.get(direccion_orig)
+                    c_orig = info_orig["coords"] if info_orig else ox.geocode(f"{direccion_orig}, Benito Juárez, CDMX, Mexico")
+                    
+                    info_dest = COORDENADAS_FIJAS.get(direccion_dest)
+                    c_dest = info_dest["coords"] if info_dest else ox.geocode(f"{direccion_dest}, Benito Juárez, CDMX, Mexico")
                 
                 # Guardar en session_state para persistencia durante el procesamiento
                 st.session_state["c_orig"] = c_orig
@@ -338,26 +341,52 @@ with col_main:
             orig_lbl = st.session_state.get("origen_label", "Origen")
             dest_lbl = st.session_state.get("destino_label", "Destino")
 
-            folium.Marker(c_orig, popup=f"<b>{orig_lbl}</b>", icon=folium.Icon(color="black", icon="play", prefix="fa")).add_to(m)
-            folium.Marker(c_dest, popup=f"<b>{dest_lbl}</b>", icon=folium.Icon(color="green", icon="flag", prefix="fa")).add_to(m)
+            # Capas de lugares fijos con Iconos Pro
+            for nombre, info in COORDENADAS_FIJAS.items():
+                tipo = info.get("tipo", "lugar")
+                coords = info["coords"]
+                
+                # Configuración de iconos segura
+                if tipo == "metro":
+                    icon_color, icon_name = "orange", "subway"
+                elif tipo == "metrobus":
+                    icon_color, icon_name = "red", "bus"
+                elif tipo == "trolebus":
+                    icon_color, icon_name = "blue", "bolt"
+                elif tipo == "parque":
+                    icon_color, icon_name = "green", "leaf"
+                else:
+                    icon_color, icon_name = "gray", "map-marker"
+
+                folium.Marker(
+                    location=coords,
+                    popup=f"<b>{nombre}</b>",
+                    icon=folium.Icon(color=icon_color, icon=icon_name, prefix="fa"),
+                    tooltip=f"{tipo.capitalize()} - Pto. Inteligente"
+                ).add_to(m)
+
+            # Capas de transporte dinámico (OSM)
+            estaciones_osm = obtener_transporte()
+            icon_map_pro = {"Metro": "subway", "Metrobús": "bus", "Trolebús": "bolt"}
             
-            # Capas de transporte multi-color con Iconos Pro
-            estaciones = obtener_transporte()
-            for est in estaciones:
-                # Iconografía profesional por tipo
-                icon_map = {
-                    "Metro": "subway",
-                    "Metrobús": "bus",
-                    "Trolebús": "bolt"
-                }
-                icon_name = icon_map.get(est['tipo'], "info-circle")
+            for est in estaciones_osm:
+                # Evitar duplicar si ya está en fijos (por nombre aproximado)
+                if any(fijo.lower() in est['name'].lower() for fijo in COORDENADAS_FIJAS.keys()): continue
+                
+                icon_name = icon_map_pro.get(est['tipo'], "info-circle")
                 
                 folium.Marker(
                     [est['lat'], est['lon']],
                     icon=folium.Icon(color=est['color'], icon=icon_name, prefix="fa"),
                     popup=f"<b>{est['name']}</b>",
-                    tooltip=f"{est['tipo']} CDMX"
+                    tooltip=f"{est['tipo']} OSM Pro"
                 ).add_to(m)
+
+            # Marcadores de Ruta Específica
+            orig_lbl = st.session_state.get("origen_label", "Origen")
+            dest_lbl = st.session_state.get("destino_label", "Destino")
+            folium.Marker(c_orig, popup=f"<b>{orig_lbl}</b>", icon=folium.Icon(color="black", icon="play", prefix="fa")).add_to(m)
+            folium.Marker(c_dest, popup=f"<b>{dest_lbl}</b>", icon=folium.Icon(color="green", icon="flag", prefix="fa")).add_to(m)
 
             # --- AJUSTE DINÁMICO DEL MAPA (Auto-zoom) ---
             m.fit_bounds([c_orig, c_dest], padding=(50, 50))

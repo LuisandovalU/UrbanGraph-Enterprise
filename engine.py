@@ -35,28 +35,29 @@ def aplicar_formula_sandoval(G, weather_impact=1.0, hurry_factor=50.0):
     for u, v, k, data in G.edges(keys=True, data=True):
         segment_length = data.get('length', 10.0)
         street_name = str(data.get('name', '')).lower()
-        highway_type = str(data.get('highway', '')).lower()
+        # BONO DE VÍAS (Ingeniería Geoespacial)
+        # Prioridad 1: Avenidas principales por nombre o tag
+        is_avenue = any(av in street_name for av in ['insurgentes', 'eje central', 'universidad', 'cuauhtemoc', 'division del norte'])
+        is_fast_highway = any(av in highway_type for av in ['primary', 'secondary', 'tertiary'])
         
-        # Lógica de riesgo base (Lineal)
-        risk_multiplier = RISK_PROFILE["WEIGHTS"]["STANDARD"]
+        # Prioridad 2: Pasajes peatonales (Atajos inteligentes)
+        is_pedestrian_path = any(path in highway_type for path in ['footway', 'pedestrian', 'path', 'living_street'])
         
-        if any(safe_key in street_name for safe_key in RISK_PROFILE["KEYWORDS"]["SAFE"]):
-            risk_multiplier = RISK_PROFILE["WEIGHTS"]["SAFE"]
-            
-        if any(danger_key in street_name for danger_key in RISK_PROFILE["KEYWORDS"]["DANGER"]):
-            risk_multiplier = RISK_PROFILE["WEIGHTS"]["DANGER"]
-            
-        # BONO DE AVENIDAS (Vías Rápidas)
-        # Si es una avenida principal, reducimos su costo base para favorecer flujo
-        avenue_bonus = 0.7 if any(av in highway_type for av in ['primary', 'secondary', 'tertiary']) else 1.0
+        # Aplicación de bonos (Reducción de impedancia base)
+        avenue_bonus = 0.6 if (is_avenue or is_fast_highway) else 1.0
+        path_bonus = 0.5 if is_pedestrian_path else 1.0
         
-        # AUDACIA SANDOVAL 2.2: Reducción lineal de riesgo
-        # El riesgo se diluye a medida que aumenta h_ratio
-        impacto_riesgo_reducido = 1.0 + (risk_multiplier - 1.0) * s_ratio
+        # AUDACIA SANDOVAL 2.4: "Eficiencia Total"
+        # Si h_ratio > 0.7, el riesgo se diluye aún más para priorizar distancia absoluta
+        dynamic_s_ratio = s_ratio if h_ratio <= 0.7 else s_ratio * 0.5
         
-        # Impedancia Pro: (Longitud * BonoAvenida * Prisa) + (Riesgo * Seguridad)
-        data['final_impedance'] = (segment_length * avenue_bonus * h_ratio) + \
-                                 (segment_length * impacto_riesgo_reducido * weather_impact * s_ratio)
+        riesgo_base = (risk_multiplier * weather_impact)
+        riesgo_ajustado = riesgo_base * dynamic_s_ratio
+        
+        # Impedancia Pro 2.4: Balance multi-criterio
+        # Notar que avenue_bonus y path_bonus benefician tanto a la longitud como al riesgo
+        data['final_impedance'] = (segment_length * avenue_bonus * path_bonus * h_ratio) + \
+                                 (segment_length * riesgo_ajustado * 5.0 * dynamic_s_ratio)
         
     return G
 
