@@ -1,12 +1,12 @@
 # UrbanGraph Enterprise 🚀
 
-### Ecosistema de Análisis Topológico Dinámico | Fórmula Sandoval (NASA Level)
+### Ecosistema de Análisis Topológico Dinámico | Fórmula Sandoval 
 
 UrbanGraph Enterprise es una plataforma geoespacial de misión crítica diseñada para la optimización de rutas peatonales seguras mediante inteligencia artificial, datos cinéticos (clima) y arquitectura de microservicios.
 
 ---
 
-## 🏗️ Arquitectura Enterprise
+## Arquitectura Enterprise
 
 El sistema está completamente contenerizado y desacoplado:
 
@@ -18,7 +18,7 @@ El sistema está completamente contenerizado y desacoplado:
 
 ---
 
-## 🔒 API Reference & Segurida
+## API Reference & Segurida
 
 La API está protegida. Para realizar consultas, se requiere el Bearer Token corporativo.
 
@@ -45,7 +45,7 @@ Calcula la ruta óptima considerando factores estáticos de riesgo y dinámicos 
 
 ---
 
-## 🚀 Despliegue con Docker
+##  Despliegue con Docker
 
 Para lanzar el ecosistema completo en modo producción:
 
@@ -59,6 +59,6 @@ Esto levantará:
 
 ---
 
-## 🎓 Créditos
+## Créditos
 Desarrollado por **Luis Sandoval | UPIICSA 2025**.
 "Inteligencia topológica para un mundo en movimiento."
