@@ -1,14 +1,22 @@
-osmnx
-networkx
+# --- Núcleo de Interfaz y Mapas ---
 streamlit
 streamlit-folium
 folium
+matplotlib
+
+# --- Motor de Grafo y Geometría (UrbanOS Core) ---
+osmnx
+networkx
+scipy
+scikit-learn
+
+# --- Infraestructura y API (Paso 2 Ready) ---
 fastapi
 uvicorn
 pydantic
-pytest
-scikit-learn
-psutil
 requests
-matplotlib
-jinja2scipy
+
+# --- Utilidades y Pruebas ---
+psutil
+pytest
+jinja2
