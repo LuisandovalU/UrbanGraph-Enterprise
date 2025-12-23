@@ -111,19 +111,47 @@ def extraer_puntos_interes(location=RISK_PROFILE["LOCATION"]):
         return sorted(list(nombres_calles) + nombres_pois)
     except Exception as e:
         print(f"Error extrayendo POIs: {e}")
-        return ["Parque de los Venados", "WTC Ciudad de México", "Coyoacán"]
+        return ["Parque de los Venados", "WTC Ciudad de México", "Metro Zapata", "Metro Centro Médico"]
 
 def extraer_estaciones_transporte(location=RISK_PROFILE["LOCATION"]):
-    """Busca estaciones de Metro y Metrobús cercanas."""
-    tags = {'public_transport': 'station', 'railway': 'station', 'amenity': 'bus_station'}
-    stations = ox.features_from_place(location, tags)
-    if stations.empty:
+    """Busca y categoriza estaciones de transporte (Metro, Metrobús, Trolebús)."""
+    tags = {
+        'public_transport': ['station', 'stop_position'],
+        'railway': ['station', 'subway_entrance'],
+        'amenity': ['bus_station']
+    }
+    try:
+        stations = ox.features_from_place(location, tags)
+        if stations.empty:
+            return []
+        
+        results = []
+        for _, row in stations.iterrows():
+            name = row.get('name', '')
+            if not name or str(name) == 'nan': continue
+            
+            # Lógica de categorización por tags de OSM
+            tipo = "Autobús"
+            color = "gray"
+            
+            if any(x in str(row).lower() for x in ['subway', 'metro', 'linea 3', 'linea 12']):
+                tipo = "Metro"
+                color = "orange"
+            elif any(x in str(row).lower() for x in ['metrobus', 'metrobús']):
+                tipo = "Metrobús"
+                color = "red"
+            elif any(x in str(row).lower() for x in ['trolebus', 'trolebús', 'ste']):
+                tipo = "Trolebús"
+                color = "blue"
+            
+            point = row.get('geometry').centroid
+            results.append({
+                'name': f"{tipo} {name}", 
+                'lat': point.y, 
+                'lon': point.x,
+                'tipo': tipo,
+                'color': color
+            })
+        return results
+    except Exception:
         return []
-    
-    # Filtrar y formatear
-    results = []
-    for idx, row in stations.iterrows():
-        name = row.get('name', 'Estación sin nombre')
-        point = row.get('geometry').centroid
-        results.append({'name': name, 'lat': point.y, 'lon': point.x})
-    return results
