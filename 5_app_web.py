@@ -6,7 +6,9 @@ from streamlit_folium import st_folium
 import base64
 import os
 import engine
+from engine import logger
 import random
+import time
 
 # --- 1. CONFIGURACIÓN DE PÁGINA ---
 def cargar_configuracion():
@@ -157,9 +159,10 @@ COORDENADAS_FIJAS = {
 
 if "rutas_calculadas" not in st.session_state:
     st.session_state["rutas_calculadas"] = False
+
+# Incidentes sintéticos inicializados perezosamente para evitar 'Blue Screen'
 if "incidentes" not in st.session_state:
-    G_init = engine.cargar_grafo_seguro()
-    st.session_state["incidentes"] = engine.generar_incidentes_sinteticos(G_init)
+    st.session_state["incidentes"] = []
 
 # --- 6. LAYOUT ---
 
@@ -168,7 +171,15 @@ col_side, col_map = st.columns([1, 3], gap="small")
 with col_side:
     logo_b64 = get_base64_image_cached("logo.jpg") or get_base64_image_cached("icono_u.jpg")
     img_tag = f'<img src="data:image/png;base64,{logo_b64}" class="logo-img">' if logo_b64 else ''
-    st.markdown(f'<div class="header-container">{img_tag}<div><h1 class="brand-title">UrbanOS</h1><div class="brand-subtitle">Evolution 2040</div></div></div>', unsafe_allow_html=True)
+    st.markdown(f'''
+    <div class="header-container">
+        {img_tag}
+        <div>
+            <h1 class="brand-title">UrbanGraph</h1>
+            <div class="brand-subtitle">Spatial Intelligence & Urban Safety Engine</div>
+            <div style="font-size: 0.65rem; color: #10B981; font-weight: 800; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Powered by Sandoval Formula</div>
+        </div>
+    </div>''', unsafe_allow_html=True)
     
     st.markdown('<div class="sidebar-content">', unsafe_allow_html=True)
     
@@ -225,6 +236,7 @@ with col_side:
 
             st.markdown(f"""
             <div class="result-grid">
+                <div class="result-card"><span class="card-label">Incidentes C5 Eludidos</span><div class="card-value" style="color: #10B981;">{analisis.get('eluded_incidents', 0)}</div><span class="status-badge badge-success">IMPACT MEASURED</span></div>
                 <div class="result-card"><span class="card-label">Tiempo Relámpago</span><div class="card-value">{t_rel} min</div><span class="status-badge badge-info">REAL-TIME SYNC</span></div>
                 <div class="result-card"><span class="card-label">Integrity Score</span><div class="card-value">{integrity}%</div><span class="status-badge badge-success">VERIFIED</span></div>
                 <div class="result-card"><span class="card-label">Alertas C5 Activas</span><div class="card-value">{total_alerts}</div><span class="status-badge badge-danger">PROACTIVE SAFETY</span></div>
@@ -285,28 +297,37 @@ with col_map:
             if analisis.get("relampago"):
                 folium.PolyLine([(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["relampago"]], color='#F59E0B', weight=8, opacity=0.9).add_to(m)
 
-            # Incidents Layer (Sintéticos + Reales)
-            all_icons = st.session_state["incidentes"] + realtime_data["incidents"]
+            # Incidents Layer (Sintéticos + Reales) con validación estricta
+            all_icons = st.session_state["incidentes"] + realtime_data.get("incidents", [])
             for inc in all_icons:
-                folium.Marker(
-                    [inc["lat"], inc["lon"]],
-                    icon=folium.Icon(color=inc["color"], icon=inc.get("icon", "warning"), prefix="fa"),
-                    tooltip=f"<b>ALERTA C5 {'(REAL)' if 'impacto' in inc and 'icon' not in inc else ''}</b>: {inc['tipo']}"
-                ).add_to(m)
+                try:
+                    lat, lon = float(inc["lat"]), float(inc["lon"])
+                    if abs(lat) > 0 and abs(lon) > 0:
+                        folium.Marker(
+                            [lat, lon],
+                            icon=folium.Icon(color=inc["color"], icon=inc.get("icon", "warning"), prefix="fa"),
+                            tooltip=f"<b>ALERTA C5 {'(REAL)' if 'impacto' in inc and 'icon' not in inc else ''}</b>: {inc['tipo']}"
+                        ).add_to(m)
+                except: continue
 
             # Ecobici Layer (Real-time True Stock)
-            bicis = realtime_data["ecobici"]
+            bicis = realtime_data.get("ecobici", {})
             for nombre, info in COORDENADAS_FIJAS.items():
-                if info.get("tipo") == "bicicleta":
-                    # Intentar matchear estación por nombre o random logic para demo
-                    stock = random.choice(list(bicis.values())) if bicis else "0"
-                    color_stock = "#F59E0B" if int(stock) > 0 else "#EF4444"
-                    folium.CircleMarker(
-                        info["coords"], radius=10, color=color_stock, fill=True, 
-                        tooltip=f"Ecobici {nombre}: {stock} disponibles",
-                        popup=f"Status: {'OPERATIVO' if int(stock) > 0 else 'SIN BICIS'}<br>Stock: {stock}"
-                    ).add_to(m)
+                try:
+                    if info.get("tipo") == "bicicleta":
+                        stock = bicis.get(nombre, random.choice(list(bicis.values())) if bicis else "0")
+                        color_stock = "#F59E0B" if int(stock) > 0 else "#EF4444"
+                        folium.CircleMarker(
+                            info["coords"], radius=10, color=color_stock, fill=True, 
+                            tooltip=f"Ecobici {nombre}: {stock} disponibles",
+                            popup=f"Status: {'OPERATIVO' if int(stock) > 0 else 'SIN BICIS'}<br>Stock: {stock}"
+                        ).add_to(m)
+                except: continue
 
             m.fit_bounds([st.session_state["c_orig"], st.session_state["c_dest"]], padding=(100, 100))
             st_folium(m, width=None, height=900, returned_objects=[])
-        except Exception as e: st.error(f"Render Error: {e}")
+        except Exception as e:
+            st.error("⚠️ Error al renderizar capas dinámicas. Mostrando mapa base de contingencia.")
+            m_base = folium.Map(tiles='CartoDB dark_matter', attr='UrbanOS Base')
+            st_folium(m_base, width=None, height=900, returned_objects=[])
+            logger.error(f"UI Force Render Error: {e}")

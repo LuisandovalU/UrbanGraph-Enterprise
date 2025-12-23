@@ -115,14 +115,20 @@ def fetch_realtime_data() -> Dict:
             if res.status_code == 200:
                 records = res.json()["result"]["records"]
                 for rec in records:
-                    if rec.get("latitud") and rec.get("longitud"):
-                        data["incidents"].append({
-                            "tipo": rec.get("incidente_c4", "Incidente Vial"),
-                            "lat": float(rec["latitud"]),
-                            "lon": float(rec["longitud"]),
-                            "impacto": 3.0,
-                            "color": "red"
-                        })
+                    try:
+                        lat = float(rec.get("latitud", 0))
+                        lon = float(rec.get("longitud", 0))
+                        # Filtrar coordenadas nulas o sospechosas (0,0 es el Atlántico)
+                        if lat != 0 and lon != 0:
+                            data["incidents"].append({
+                                "tipo": rec.get("incidente_c4", "Incidente Vial"),
+                                "lat": lat,
+                                "lon": lon,
+                                "impacto": 3.0,
+                                "color": "red"
+                            })
+                    except (ValueError, TypeError):
+                        logger.warning(f"Sync Audit: Map skipping record with invalid coords: {rec.get('latitud')}, {rec.get('longitud')}")
                 success_count += 1
                 logger.info("Sync Audit: C5 Incidents ingested successfully.")
             else:
@@ -323,6 +329,21 @@ def calcular_ruta_optima(G, coords_orig, coords_dest, criterio='final_impedance'
     except nx.NetworkXNoPath:
         return None, n_orig, n_dest
 
+def _count_incident_hits(route, G, incidents_map):
+    """Cuenta cuántos incidentes únicos impactan una trayectoria.
+
+    Args:
+        route (List): Lista de nodos de la ruta.
+        G (nx.MultiDiGraph): El grafo.
+        incidents_map (Dict): Mapeo de nodo a impacto.
+
+    Returns:
+        int: Número de incidentes detectados en la ruta.
+    """
+    if not route or not incidents_map:
+        return 0
+    return sum(1 for node in route if node in incidents_map)
+
 def obtener_analisis_multi_ruta(G, coords_orig, coords_dest, hurry_factor=50.0, weather_impact=1.0, incidentes: List[Dict] = None, realtime_data: Dict = None):
     """Realiza un análisis comparativo de trayectorias (Escudo vs Relámpago vs Directa).
 
@@ -336,8 +357,23 @@ def obtener_analisis_multi_ruta(G, coords_orig, coords_dest, hurry_factor=50.0, 
         realtime_data (Dict, optional): Datos de APIs en vivo.
 
     Returns:
-        Dict: Analítica de rutas incluyendo nodos de trayectoria y puntos críticos.
+        Dict: Analítica de rutas incluyendo nodos de trayectoria y eludidos.
     """
+    # 0. Preparar Mapa de Incidentes para Auditoría de Impacto
+    tree, node_ids = build_graph_spatial_index(G)
+    incidents_map = {}
+    all_incidents = (incidentes or [])
+    if realtime_data and "incidents" in realtime_data:
+        all_incidents.extend(realtime_data["incidents"])
+        
+    for inc in all_incidents:
+        if "node" in inc:
+            incidents_map[inc["node"]] = inc["impacto"]
+        else:
+            _, idx = tree.query((inc["lon"], inc["lat"]))
+            target_node = node_ids[idx]
+            incidents_map[target_node] = max(incidents_map.get(target_node, 0), inc["impacto"])
+
     # 1. Ruta Directa (Rapidez Pura)
     r_directa, n_orig, n_dest = calcular_ruta_optima(G, coords_orig, coords_dest, criterio='length')
     
@@ -357,11 +393,17 @@ def obtener_analisis_multi_ruta(G, coords_orig, coords_dest, hurry_factor=50.0, 
     G_relampago = aplicar_formula_sandoval(G.copy(), weather_impact=weather_impact, hurry_factor=hurry_factor, incidentes=incidentes, realtime_data=realtime_data)
     r_relampago, _, _ = calcular_ruta_optima(G_relampago, coords_orig, coords_dest)
     
+    # --- Impact Matrix Calculation ---
+    hits_directa = _count_incident_hits(r_directa, G, incidents_map)
+    hits_relampago = _count_incident_hits(r_relampago, G, incidents_map)
+    eluded = max(0, hits_directa - hits_relampago)
+    
     return {
         "escudo": r_escudo,
         "relampago": r_relampago,
         "directa": r_directa,
-        "nodes": (n_orig, n_dest)
+        "nodes": (n_orig, n_dest),
+        "eluded_incidents": eluded
     }
 
 def extraer_puntos_interes(location=RISK_PROFILE["LOCATION"]):
