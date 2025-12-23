@@ -45,11 +45,12 @@ def aplicar_formula_sandoval(G, weather_impact=1.0, hurry_factor=50.0):
         if any(danger_key in street_name for danger_key in RISK_PROFILE["KEYWORDS"]["DANGER"]):
             risk_multiplier = RISK_PROFILE["WEIGHTS"]["DANGER"]
             
-        # Fórmula Sandoval 2.0: Balance entre tiempo y seguridad
-        # Impedancia = (Longitud * PesoTiempo) + (Riesgo * PesoSeguridad)
-        costo_seguridad = segment_length * risk_multiplier * weather_impact
+        # AUDACIA SANDOVAL: Reducir intensidad del riesgo si hay prisa
+        # Si h_ratio=1.0 (prisa máx), el multiplicador de riesgo tiende a 1.0 (neutral)
+        impacto_riesgo = 1.0 + (risk_multiplier - 1.0) * s_ratio
         
-        data['final_impedance'] = (segment_length * h_ratio) + (costo_seguridad * s_ratio)
+        # Fórmula Sandoval 2.1: Balance dinámico
+        data['final_impedance'] = (segment_length * h_ratio) + (segment_length * impacto_riesgo * weather_impact * s_ratio)
         
     return G
 
