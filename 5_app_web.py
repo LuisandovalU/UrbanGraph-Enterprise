@@ -9,15 +9,31 @@ import engine
 import random
 
 # --- 1. CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(
-    page_title="UrbanOS 2040 Tactical Console", 
-    layout="wide", 
-    page_icon="icono_u.jpg"
-)
+def cargar_configuracion():
+    """Establece la configuración base de la página de Streamlit.
+
+    Define el título, el layout ancho y el icono de la aplicación
+    para una experiencia táctica coherente.
+    """
+    st.set_page_config(
+        page_title="UrbanOS 2040 Tactical Console", 
+        layout="wide", 
+        page_icon="icono_u.jpg"
+    )
+
+cargar_configuracion()
 
 # --- 2. GESTIÓN DE RECURSOS ---
 @st.cache_data(show_spinner=False)
 def get_base64_image_cached(image_path):
+    """Codifica una imagen en Base64 con almacenamiento en caché.
+
+    Args:
+        image_path (str): Ruta local al archivo de imagen.
+
+    Returns:
+        Optional[str]: String codificado en Base64 o None si el archivo no existe.
+    """
     if os.path.exists(image_path):
         with open(image_path, "rb") as img_file:
             return base64.b64encode(img_file.read()).decode()
@@ -59,6 +75,11 @@ st.markdown("""
     .badge-danger { background: #EF4444; color: white; }
 
     .map-container { height: 94vh; border-radius: 12px; overflow: hidden; border: 1px solid #334155; }
+
+    /* Observability Panel */
+    .observability-panel { background: #0F172A; border: 1px solid #1E293B; border-radius: 8px; padding: 10px; margin-top: 15px; }
+    .obs-item { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 5px; color: #94A3B8; }
+    .obs-value { font-weight: 700; color: #F8FAFC; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -66,15 +87,36 @@ st.markdown("""
 
 @st.cache_data(show_spinner=False)
 def obtener_grafo_optimizado():
+    """Recupera el grafo base del motor UrbanOS.
+
+    Returns:
+        nx.MultiDiGraph: El grafo urbano cargado y listo para análisis.
+    """
     return engine.cargar_grafo_seguro()
 
 @st.cache_data(ttl=300, show_spinner=False)
 def get_realtime_sync():
-    """Pilar 1: Orquestación en Tiempo Real."""
+    """Sincroniza datos en tiempo real (Pilar 1: Orquestación).
+
+    Returns:
+        Dict: Datos de Ecobici, C5 y telemetría del sistema.
+    """
     return engine.fetch_realtime_data()
 
 @st.cache_data(show_spinner=False)
 def obtener_analisis_tactico(hurry_factor, c_orig, c_dest, incidentes, realtime_data):
+    """Calcula el vector táctico para las tres rutas soportadas.
+
+    Args:
+        hurry_factor (float): Nivel de optimización temporal (0-100).
+        c_orig (Tuple[float, float]): Origen geográfico.
+        c_dest (Tuple[float, float]): Destino geográfico.
+        incidentes (List[Dict]): Alertas de seguridad activas.
+        realtime_data (Dict): Feed de datos en vivo de APIs.
+
+    Returns:
+        Dict: Resultados del análisis multi-ruta.
+    """
     G = obtener_grafo_optimizado()
     return engine.obtener_analisis_multi_ruta(
         G, c_orig, c_dest, 
@@ -84,7 +126,14 @@ def obtener_analisis_tactico(hurry_factor, c_orig, c_dest, incidentes, realtime_
     )
 
 def render_b2g_analysis(incidentes):
-    """Analiza zonas de intervención para el gobierno (B2G)."""
+    """Renderiza el análisis de planeación urbana para autoridades (B2G).
+
+    Identifica zonas de intervención basadas en la densidad de incidentes y
+    permite sugerir mejoras de infraestructura.
+
+    Args:
+        incidentes (List[Dict]): Lista combinada de incidentes reales y sintéticos.
+    """
     st.markdown("### 📊 Planeación Urbana (B2G)")
     if not incidentes:
         st.write("No hay incidentes reportados en este cuadrante.")
@@ -148,8 +197,10 @@ with col_side:
         except: st.error("Fallo de Geolocalización.")
 
     if st.session_state["rutas_calculadas"]:
-        with st.spinner("Sincronizando Real-Time..."):
+        with st.status("📡 Sincronización UrbanOS 2040", expanded=False) as status:
+            st.write("Conectando con Servidores C5...")
             realtime_data = get_realtime_sync()
+            st.write("Calculando Vector Sandoval (KDTree enabled)...")
             analisis = obtener_analisis_tactico(
                 st.session_state["prisa"], 
                 st.session_state["c_orig"], 
@@ -157,6 +208,8 @@ with col_side:
                 st.session_state["incidentes"],
                 realtime_data
             )
+            status.update(label="Sincronización Completa ✅", state="complete")
+            
             G_ref = obtener_grafo_optimizado()
             n_o, n_d = analisis["nodes"]
             d_rel = int(nx.shortest_path_length(G_ref, n_o, n_d, weight='length'))
@@ -167,12 +220,34 @@ with col_side:
             
             # Cómputo de alertas combinadas
             total_alerts = len(st.session_state["incidentes"]) + len(realtime_data["incidents"])
+            data_health = realtime_data.get("integrity", "Unknown")
+            health_color = "badge-success" if "Optimal" in data_health else "badge-info" if "Degraded" in data_health else "badge-danger"
 
             st.markdown(f"""
             <div class="result-grid">
                 <div class="result-card"><span class="card-label">Tiempo Relámpago</span><div class="card-value">{t_rel} min</div><span class="status-badge badge-info">REAL-TIME SYNC</span></div>
                 <div class="result-card"><span class="card-label">Integrity Score</span><div class="card-value">{integrity}%</div><span class="status-badge badge-success">VERIFIED</span></div>
                 <div class="result-card"><span class="card-label">Alertas C5 Activas</span><div class="card-value">{total_alerts}</div><span class="status-badge badge-danger">PROACTIVE SAFETY</span></div>
+                <div class="result-card"><span class="card-label">Data Health</span><div class="card-value" style="font-size: 1rem;">{data_health}</div><span class="status-badge {health_color}">SYSTEM</span></div>
+            </div>
+            
+            <div class="observability-panel">
+                <div style="font-size: 0.7rem; font-weight: 800; color: #64748B; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Observabilidad de Sistema</div>
+                <div class="obs-item"><span>Latencia de Red (P99)</span><span class="obs-value">{realtime_data['metrics']['latency_ms']}ms</span></div>
+                <div class="obs-item"><span>Fidelidad de Datos</span><span class="obs-value">{realtime_data['metrics']['fidelity']}%</span></div>
+                <div class="obs-item"><span>Alertas en Radio</span><span class="obs-value">{total_alerts}</span></div>
+                <div class="obs-item"><span>Patrón de Resiliencia</span><span class="obs-value" style="color: #10B981;">Circuit Breaker 3s</span></div>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <details style="background: #0F172A; border: 1px solid #1E293B; border-radius: 8px; padding: 10px; color: #94A3B8; font-size: 0.75rem;">
+                    <summary style="cursor: pointer; font-weight: 800; color: #64748B; text-transform: uppercase;">Panel de Integridad</summary>
+                    <div style="margin-top: 10px;">
+                        <div class="obs-item"><span>C5 Connection</span><span class="obs-value" style="color: {'#10B981' if realtime_data['integrity'] != 'Critical' else '#EF4444'}">{'Active' if realtime_data['integrity'] != 'Critical' else 'Fallback'}</span></div>
+                        <div class="obs-item"><span>Última Sincronía</span><span class="obs-value">{realtime_data['metrics']['last_sync']}</span></div>
+                        <div class="obs-item"><span>Resiliencia Auditor</span><span class="obs-value">Log Active</span></div>
+                    </div>
+                </details>
             </div>
             """, unsafe_allow_html=True)
             

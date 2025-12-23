@@ -1,23 +1,33 @@
 services:
   api:
     build: .
-    container_name: urbangraph-api
+    container_name: urbanos-api
     ports:
       - "8000:8000"
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
     environment:
       - PYTHONUNBUFFERED=1
-      - URBANGRAPH_TOKEN=sandoval-enterprise-token-2025
 
   webapp:
     build: .
-    container_name: urbangraph-ui
+    container_name: urbanos-console
     ports:
       - "8501:8501"
     volumes:
       - .:/app
     depends_on:
       - api
+    restart: always
     command: streamlit run 5_app_web.py --server.port 8501 --server.address 0.0.0.0
+    deploy:
+      resources:
+        limits:
+          memory: 2G
     environment:
       - PYTHONUNBUFFERED=1

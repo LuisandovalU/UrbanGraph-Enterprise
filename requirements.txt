@@ -9,4 +9,6 @@ pydantic
 pytest
 scikit-learn
 psutil
-scikit-learn
+requests
+matplotlib
+jinja2scipy
