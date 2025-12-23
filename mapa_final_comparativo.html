@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_3c232a5e84db3ff2e3b63a3d780486e3 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+     <div style="position: fixed; bottom: 50px; left: 50px; width: 160px; height: 100px; 
+     border:2px solid grey; z-index:9999; font-size:14px;
+     background-color:white; opacity:0.9; padding: 10px; border-radius: 5px;">
+     <b>Comparación de Rutas</b><br>
+     <i style="background:red; width:10px; height:2px; display:inline-block;"></i> Waze/Google (Rápida)<br>
+     <i style="background:green; width:10px; height:2px; display:inline-block;"></i> Algoritmo Sandoval
+     </div>
+     
+    
+            <div class="folium-map" id="map_3c232a5e84db3ff2e3b63a3d780486e3" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_3c232a5e84db3ff2e3b63a3d780486e3 = L.map(
+                "map_3c232a5e84db3ff2e3b63a3d780486e3",
+                {
+                    center: [19.3621, -99.1764],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 14,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_1e3f891744eeaadbf9272838819a8c42 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_1e3f891744eeaadbf9272838819a8c42.addTo(map_3c232a5e84db3ff2e3b63a3d780486e3);
+        
+    
+            var poly_line_1eed6d0d96c47531235fde3719d6ead6 = L.polyline(
+                [[19.3624989, -99.1748104], [19.3641715, -99.1765718], [19.3647485, -99.1760506], [19.3638858, -99.1746983], [19.3637169, -99.1744332], [19.3636382, -99.1743147], [19.3632922, -99.1737879], [19.3630242, -99.1733934], [19.3629727, -99.1733543], [19.3627093, -99.1729362], [19.3621259, -99.1725394], [19.3606233, -99.1714266], [19.3605082, -99.171366], [19.36037, -99.1712754], [19.3590415, -99.170435], [19.3589683, -99.1702687], [19.3588425, -99.1698041], [19.3588217, -99.169686], [19.3588174, -99.1696373], [19.3587938, -99.1692916], [19.3587763, -99.1683984], [19.3587748, -99.1682809], [19.3588132, -99.1679133], [19.3587944, -99.1676655], [19.3587201, -99.1672869], [19.3587068, -99.1672097], [19.3586975, -99.1671367], [19.3585229, -99.1640055], [19.3584946, -99.1634976], [19.358485, -99.1633465], [19.3584788, -99.1632492], [19.3584091, -99.1621565], [19.3583531, -99.1612778], [19.3583286, -99.1608936], [19.3582469, -99.159611], [19.3581983, -99.1588491], [19.3581831, -99.1586101], [19.3581563, -99.1581898]],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "red", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(map_3c232a5e84db3ff2e3b63a3d780486e3);
+        
+    
+            poly_line_1eed6d0d96c47531235fde3719d6ead6.bindTooltip(
+                `<div>
+                     Ruta Más Corta (Peligrosa)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var poly_line_5ae9e749abc6087ed4aa7132edab1f76 = L.polyline(
+                [[19.3624989, -99.1748104], [19.3641715, -99.1765718], [19.3647485, -99.1760506], [19.3638858, -99.1746983], [19.3641902, -99.1746353], [19.3648539, -99.1744778], [19.3646776, -99.1739953], [19.3645902, -99.1737548], [19.3642471, -99.1728019], [19.3639443, -99.1719579], [19.3637265, -99.1713551], [19.3634757, -99.1706576], [19.3633237, -99.1698785], [19.3631262, -99.1699196], [19.361761, -99.1705536], [19.3609751, -99.1680293], [19.3611162, -99.1677462], [19.360913, -99.1678953], [19.3604615, -99.1666233], [19.3604207, -99.1666043], [19.359393, -99.1633748], [19.359131, -99.1634123], [19.3598257, -99.1617031], [19.3600622, -99.1612153], [19.3603235, -99.1606677], [19.3605993, -99.1600773], [19.361403, -99.1583634], [19.3600548, -99.1576348], [19.3586378, -99.1571134], [19.3581563, -99.1581898]],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "green", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 5}
+            ).addTo(map_3c232a5e84db3ff2e3b63a3d780486e3);
+        
+    
+            poly_line_5ae9e749abc6087ed4aa7132edab1f76.bindTooltip(
+                `<div>
+                     Ruta Sandoval (Segura)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_eab8690d9ce42dab7e99b1155af96de2 = L.marker(
+                [19.3621, -99.1764],
+                {
+}
+            ).addTo(map_3c232a5e84db3ff2e3b63a3d780486e3);
+        
+    
+            var icon_4cec8c809aa0f0615d8facb977a0ee27 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "black",
+  "iconColor": "white",
+  "icon": "play",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_413ddfb5ee16f2e6261eb8e6f58a6503 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_ea043e54a42b2e1014ac0bde4712939d = $(`<div id="html_ea043e54a42b2e1014ac0bde4712939d" style="width: 100.0%; height: 100.0%;">Inicio: Metro Coyoacán</div>`)[0];
+                popup_413ddfb5ee16f2e6261eb8e6f58a6503.setContent(html_ea043e54a42b2e1014ac0bde4712939d);
+            
+        
+
+        marker_eab8690d9ce42dab7e99b1155af96de2.bindPopup(popup_413ddfb5ee16f2e6261eb8e6f58a6503)
+        ;
+
+        
+    
+    
+                marker_eab8690d9ce42dab7e99b1155af96de2.setIcon(icon_4cec8c809aa0f0615d8facb977a0ee27);
+            
+    
+            var marker_9e7a54fcd6ea544ec1d6bbd9f315b754 = L.marker(
+                [19.3567, -99.1583],
+                {
+}
+            ).addTo(map_3c232a5e84db3ff2e3b63a3d780486e3);
+        
+    
+            var icon_f335ef2f22c27cdfeea16e33887ee1c1 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "black",
+  "iconColor": "white",
+  "icon": "stop",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_4cef6427920c4fbe9b705024484fe6e2 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8881e309005379f8237a50ae1cdffa2e = $(`<div id="html_8881e309005379f8237a50ae1cdffa2e" style="width: 100.0%; height: 100.0%;">Fin: Alberca Olímpica</div>`)[0];
+                popup_4cef6427920c4fbe9b705024484fe6e2.setContent(html_8881e309005379f8237a50ae1cdffa2e);
+            
+        
+
+        marker_9e7a54fcd6ea544ec1d6bbd9f315b754.bindPopup(popup_4cef6427920c4fbe9b705024484fe6e2)
+        ;
+
+        
+    
+    
+                marker_9e7a54fcd6ea544ec1d6bbd9f315b754.setIcon(icon_f335ef2f22c27cdfeea16e33887ee1c1);
+            
+</script>
+</html>

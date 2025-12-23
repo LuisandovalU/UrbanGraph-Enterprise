@@ -1,0 +1,9 @@
+osmnx
+networkx
+streamlit
+streamlit-folium
+folium
+fastapi
+uvicorn
+pydantic
+pytest

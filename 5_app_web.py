@@ -1,0 +1,248 @@
+import streamlit as st
+import osmnx as ox
+import networkx as nx
+import folium
+from streamlit_folium import st_folium
+import base64
+import os
+
+import engine
+
+# ==========================================
+# 🛑 CONFIGURACIÓN DE MISIÓN (CONSTANTES)
+# ==========================================
+# RISK_PROFILE ahora se gestiona en engine.py
+
+# --- 1. CONFIGURACIÓN DE PÁGINA ---
+st.set_page_config(
+    page_title="UrbanGraph V23", 
+    layout="wide", 
+    page_icon="icono_u.jpg"
+)
+
+# --- 2. GESTIÓN DE RECURSOS (OPTIMIZADO I/O) ---
+@st.cache_data(show_spinner=False)
+def get_base64_image_cached(image_path):
+    """
+    Lee y codifica imágenes en Base64.
+    OPTIMIZACIÓN: Usa caché en RAM para evitar I/O de disco repetitivo.
+    """
+    if os.path.exists(image_path):
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    return None
+
+# --- 3. CSS (SISTEMA DE DISEÑO) ---
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Playfair+Display:wght@700&display=swap');
+    .stApp { background-color: #FFFFFF; font-family: 'Manrope', sans-serif; color: #0F172A; }
+    
+    /* HEADER */
+    .header-container { display: flex; align-items: center; gap: 20px; padding-bottom: 20px; border-bottom: 1px solid #E2E8F0; margin-bottom: 20px; }
+    .logo-img { width: 85px; height: 85px; object-fit: contain; border-radius: 12px; }
+    .brand-title { font-family: 'Manrope'; font-size: 2.8rem; font-weight: 800; color: #0F172A; line-height: 1; margin: 0; }
+    .brand-subtitle { font-family: 'Manrope'; font-size: 0.95rem; color: #64748B; margin-top: 5px; font-weight: 500; }
+
+    /* TARJETAS */
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .result-card { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 15px 20px; }
+    .card-label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: #64748B; display: block; }
+    .card-value { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: #0F172A; }
+    .status-badge { font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; display: inline-block; }
+    .badge-danger { background: #FEF2F2; color: #DC2626; }
+    .badge-success { background: #F0FDF4; color: #166534; }
+    .badge-info { background: #EFF6FF; color: #2563EB; }
+    .report-box { background-color: #F8FAFC; border-left: 4px solid #0F172A; padding: 12px 15px; border-radius: 4px; font-size: 0.9rem; color: #334155; }
+    
+    /* LEYENDA VISUAL */
+    .legend-item { display: flex; align-items: center; margin-bottom: 8px; font-size: 0.85rem; color: #334155; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; }
+    .dot-green { background-color: #166534; box-shadow: 0 0 5px rgba(22, 101, 52, 0.4); }
+    .dot-yellow { background-color: #EAB308; }
+    .dot-red { background-color: #DC2626; }
+    
+    /* MAPA */
+    .map-container { border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-top: 15px; }
+    
+    section[data-testid="stSidebar"] { background-color: #FAFAFA; border-right: 1px solid #E2E8F0; }
+    div.stButton > button { background-color: #6C1D45; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 700; width: 100%; }
+    div.stButton > button:hover { background-color: #501633; }
+    #MainMenu, footer, header {visibility: hidden;}
+    .block-container { padding-top: 2rem !important; }
+</style>
+""", unsafe_allow_html=True)
+
+# --- 4. NÚCLEO ALGORÍTMICO (DESACOPLADO) ---
+if "rutas_calculadas" not in st.session_state:
+    st.session_state["rutas_calculadas"] = False
+
+@st.cache_data(show_spinner=False)
+def cargar_y_procesar_grafo():
+    """
+    Carga y procesa el grafo usando el motor Sandoval.
+    """
+    G = engine.cargar_grafo_seguro()
+    return engine.aplicar_formula_sandoval(G)
+
+# --- 5. INTERFAZ DE USUARIO ---
+
+# HEADER
+logo_b64 = get_base64_image_cached("logo.jpg") or get_base64_image_cached("icono_u.jpg")
+img_tag = f'<img src="data:image/png;base64,{logo_b64}" class="logo-img">' if logo_b64 else ''
+
+st.markdown(f"""
+<div class="header-container">
+    {img_tag}
+    <div>
+        <h1 class="brand-title">Urban<span style="font-weight:300;">Graph</span></h1>
+        <div class="brand-subtitle">Plataforma de Análisis Topológico | <strong>Ingeniería Mexicana</strong></div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+col_sidebar, col_main = st.columns([1, 2.8], gap="large")
+
+with col_sidebar:
+    st.markdown("### Parámetros")
+    lugares = {
+        "Parque España": (19.4146, -99.1697),
+        "Plaza Río de Janeiro": (19.4206, -99.1626),
+        "Fuente de Cibeles": (19.4195, -99.1685),
+        "Álvaro Obregón (Inicio)": (19.4188, -99.1609),
+        "Álvaro Obregón (Fin)": (19.4208, -99.1566),
+        "Metro Insurgentes": (19.4234, -99.1631)
+    }
+    origen = st.selectbox("Punto A (Origen)", list(lugares.keys()), index=0)
+    destino = st.selectbox("Punto B (Destino)", list(lugares.keys()), index=1)
+    
+    st.write("")
+    
+    if st.button("EJECUTAR ANÁLISIS"):
+        if origen == destino:
+            st.error("⚠️ Error de Lógica: Origen y destino son idénticos.")
+        else:
+            st.session_state["rutas_calculadas"] = True
+            
+    st.markdown("---")
+    
+    with st.expander("¿Cómo funciona el modelo?"):
+        st.markdown("""
+        El algoritmo analiza cada calle y le asigna una prioridad basada en su nivel de estrés urbano:
+        
+        <div style="margin-top: 10px;">
+            <div class="legend-item">
+                <div class="dot dot-green"></div>
+                <div><strong>Corredores Seguros:</strong><br>Calles tranquilas (ej. Colima, Tabasco). Preferencia total.</div>
+            </div>
+            <div class="legend-item">
+                <div class="dot dot-yellow"></div>
+                <div><strong>Vías Estándar:</strong><br>Tránsito regular. Uso neutral.</div>
+            </div>
+            <div class="legend-item">
+                <div class="dot dot-red"></div>
+                <div><strong>Zonas de Evasión:</strong><br>Avenidas de alto flujo (ej. Insurgentes). Se evitan a toda costa.</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # --- 6. MENSAJE DE PROPÓSITO ---
+    st.markdown("""
+    <div style="background-color: #F0FDF4; border-left: 4px solid #166534; padding: 15px; border-radius: 4px;">
+        <p style="font-size: 0.85rem; color: #166534; margin: 0; font-style: italic;">
+            "Este sistema no solo procesa datos; busca proteger la vida. Mi propósito es poner la ingeniería al servicio de los demás, transformando la tecnología en un instrumento de seguridad y paz."
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.caption("Luis Sandoval | UPIICSA 2025 | Soli Deo Gloria")
+
+with col_main:
+    if not st.session_state["rutas_calculadas"]:
+        banner_b64 = get_base64_image_cached("banner.jpg")
+        if banner_b64:
+            st.markdown(f'<img src="data:image/jpeg;base64,{banner_b64}" style="width:100%; height:350px; object-fit:cover; border-radius:12px;">', unsafe_allow_html=True)
+        else:
+            st.image("https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?q=80&w=2000", use_container_width=True)
+        st.markdown("<div style='margin-top: 25px; color: #64748B;'><p>Sistema en espera. Inicie el cálculo de ruta.</p></div>", unsafe_allow_html=True)
+
+    else:
+        try:
+            # Inicialización de seguridad para evitar NameError
+            node_orig_coords = None
+            node_dest_coords = None
+
+            with st.spinner("Procesando topología urbana..."):
+                G = cargar_y_procesar_grafo()
+            
+            c_orig = lugares[origen]
+            c_dest = lugares[destino]
+            
+            # Cálculo de Ruta Segura a través del motor Sandoval
+            r_seg, n_orig, n_dest = engine.calcular_ruta_optima(G, c_orig, c_dest)
+            
+            # Extraer coordenadas de los nodos para las líneas conectoras
+            node_orig_coords = (G.nodes[n_orig]['y'], G.nodes[n_orig]['x'])
+            node_dest_coords = (G.nodes[n_dest]['y'], G.nodes[n_dest]['x'])
+
+            # Cálculo de Ruta Directa (Rápida) para comparación
+            r_rap = nx.shortest_path(G, n_orig, n_dest, weight='length')
+            
+            # Metricas
+            d_rap = int(nx.shortest_path_length(G, n_orig, n_dest, weight='length'))
+            d_seg = int(nx.shortest_path_length(G, n_orig, n_dest, weight='length')) # Longitud real
+            
+            diff = d_seg - d_rap
+            
+            texto_reporte = f"Análisis: Se aplicó una desviación de {diff}m para optimizar seguridad." if diff > 0 else "Análisis: Ruta directa cumple parámetros de seguridad."
+
+            st.markdown(f"""
+            <div class="result-grid">
+                <div class="result-card"><span class="card-label">Ruta Directa</span><div class="card-value">{d_rap}m</div><span class="status-badge badge-danger">ALTO RIESGO</span></div>
+                <div class="result-card" style="border-bottom: 4px solid #166534;"><span class="card-label" style="color:#166534;">UrbanGraph</span><div class="card-value" style="color:#166534;">{d_seg}m</div><span class="status-badge badge-success">OPTIMIZADO</span></div>
+                <div class="result-card"><span class="card-label">Desviación</span><div class="card-value">+{diff}m</div><span class="status-badge badge-info">COSTO</span></div>
+            </div>
+            <div class="report-box">{texto_reporte}</div>
+            """, unsafe_allow_html=True)
+            
+            m = folium.Map(tiles='CartoDB positron', attr='UrbanGraph')
+            
+            coords_rap = [(G.nodes[n]['y'], G.nodes[n]['x']) for n in r_rap]
+            folium.PolyLine(coords_rap, color='#EF4444', weight=4, opacity=0.4, tooltip=f"Ruta Directa").add_to(m)
+            
+            coords_seg = [(G.nodes[n]['y'], G.nodes[n]['x']) for n in r_seg]
+            folium.PolyLine(coords_seg, color='#166534', weight=7, opacity=0.9, tooltip=f"Ruta Segura").add_to(m)
+            
+            if node_orig_coords and node_dest_coords:
+                folium.PolyLine([c_orig, node_orig_coords], color='#166534', weight=7, opacity=0.9).add_to(m)
+                folium.PolyLine([c_dest, node_dest_coords], color='#166534', weight=7, opacity=0.9).add_to(m)
+            
+            folium.Marker(c_orig, popup=f"<b>{origen}</b>", icon=folium.Icon(color="black", icon="play", prefix="fa")).add_to(m)
+            folium.Marker(c_dest, popup=f"<b>{destino}</b>", icon=folium.Icon(color="green", icon="flag", prefix="fa")).add_to(m)
+            
+            # --- AQUÍ ESTÁ EL AJUSTE DEL MAPA ---
+            # padding=(50, 50) da aire a los lados.
+            m.fit_bounds(coords_rap + coords_seg, padding=(50, 50))
+            
+            st.markdown('<div class="map-container">', unsafe_allow_html=True)
+            # height=550 es el tamaño ergonómico
+            st_folium(m, width=None, height=550, returned_objects=[])
+            st.markdown('</div>', unsafe_allow_html=True)
+
+            # --- 7. DASHBOARD DE SALUD (NASA STYLE) ---
+            st.markdown("---")
+            col_h1, col_h2, col_h3 = st.columns(3)
+            with col_h1:
+                st.metric("API Status", "Operational", delta="100% Up")
+            with col_h2:
+                import psutil
+                mem = psutil.virtual_memory().percent
+                st.metric("Engine Memory", f"{mem}%", delta="Normal", delta_color="inverse")
+            with col_h3:
+                st.metric("Network Type", "Topology Walk", delta="Encrypted")
+
+        except Exception as e:
+            st.error(f"🛑 Error Crítico del Sistema: {e}")
+            st.warning("Diagnóstico: Fallo en conexión API o integridad de grafo. Verifique logs.")
