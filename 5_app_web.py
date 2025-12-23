@@ -97,7 +97,40 @@ def cargar_y_procesar_grafo():
 
 @st.cache_data(show_spinner=False)
 def obtener_sugerencias():
-    return engine.extraer_puntos_interes()
+    sugs = engine.extraer_puntos_interes()
+    # Puntos Fijos de Alta Prioridad (Copiados de Ingeniería)
+    puntos_fijos = [
+        "Metro Centro Médico", "Metro Etiopía", "Metro Eugenia", 
+        "Metro División del Norte", "Metro Zapata", 
+        "Trolebús Eje Central - Vertiz", "Parque Hundido"
+    ]
+    # Asegurar que los puntos fijos estén al inicio
+    return puntos_fijos + [s for s in sugs if s not in puntos_fijos]
+
+# Diccionario Global de Coordenadas Fijas (Base de Datos Maestra)
+COORDENADAS_FIJAS = {
+    # Metro
+    "Metro Centro Médico": (19.4072, -99.1545),
+    "Metro Etiopía": (19.3958, -99.1557),
+    "Metro Eugenia": (19.3853, -99.1551),
+    "Metro División del Norte": (19.3796, -99.1593),
+    "Metro Zapata": (19.3703, -99.1751),
+    "Metro Mixcoac": (19.3761, -99.1876),
+    "Metro Insurgentes Sur": (19.3741, -99.1791),
+    "Metro Hospital 20 de Noviembre": (19.3732, -99.1706),
+    # Metrobús
+    "MB Col. del Valle": (19.3905, -99.1764),
+    "MB Parque Hundido": (19.3779, -99.1783),
+    "MB Félix Cuevas": (19.3731, -99.1787),
+    "MB Nápoles": (19.3934, -99.1754),
+    # Trolebús
+    "Trolebús Eje Central - Vertiz": (19.3932, -99.1432),
+    "Trolebús Eje Central - Zapata": (19.3705, -99.1435),
+    # Lugares
+    "Parque de los Venados": (19.3722, -99.1567),
+    "WTC Ciudad de México": (19.3934, -99.1747),
+    "Parque Hundido": (19.3783, -99.1788)
+}
 
 @st.cache_data(show_spinner=False)
 def obtener_transporte():
@@ -133,8 +166,19 @@ with col_sidebar:
     with st.spinner("Cargando inteligencia urbana..."):
         sugerencias = obtener_sugerencias()
     
-    direccion_orig = st.selectbox("Origen exacto (Benito Juárez)", options=sugerencias, index=sugerencias.index("Parque de los Venados") if "Parque de los Venados" in sugerencias else 0)
-    direccion_dest = st.selectbox("Destino exacto (Benito Juárez)", options=sugerencias, index=sugerencias.index("WTC Ciudad de México") if "WTC Ciudad de México" in sugerencias else 1)
+    lista_opciones = list(COORDENADAS_FIJAS.keys()) + ["-- Ingresar dirección manualmente --"]
+    
+    sel_orig = st.selectbox("Origen (Estación o Lugar)", options=lista_opciones, index=0)
+    if sel_orig == "-- Ingresar dirección manualmente --":
+        direccion_orig = st.text_input("Escribe el origen exacto:", placeholder="Ej. Calle La Quemada 316, Benito Juárez")
+    else:
+        direccion_orig = sel_orig
+
+    sel_dest = st.selectbox("Destino (Estación o Lugar)", options=lista_opciones, index=1)
+    if sel_dest == "-- Ingresar dirección manualmente --":
+        direccion_dest = st.text_input("Escribe el destino exacto:", placeholder="Ej. Insurgentes Sur 1500, Benito Juárez")
+    else:
+        direccion_dest = sel_dest
     
     st.write("")
     
@@ -150,9 +194,10 @@ with col_sidebar:
             st.error("⚠️ Error de Lógica: Origen y destino son idénticos.")
         else:
             try:
-                # Convertir texto a coordenadas reales (lat, lon)
-                c_orig = ox.geocode(f"{direccion_orig}, Benito Juárez, CDMX, Mexico")
-                c_dest = ox.geocode(f"{direccion_dest}, Benito Juárez, CDMX, Mexico")
+                # Lógica de Resolución de Coordenadas (Híbrida: Fija + Geocode)
+                with st.spinner("Resolviendo coordenadas geográficas..."):
+                    c_orig = COORDENADAS_FIJAS.get(direccion_orig) or ox.geocode(f"{direccion_orig}, Benito Juárez, CDMX, Mexico")
+                    c_dest = COORDENADAS_FIJAS.get(direccion_dest) or ox.geocode(f"{direccion_dest}, Benito Juárez, CDMX, Mexico")
                 
                 # Guardar en session_state para persistencia durante el procesamiento
                 st.session_state["c_orig"] = c_orig
@@ -267,6 +312,13 @@ with col_main:
             
             m = folium.Map(tiles='CartoDB positron', attr='UrbanGraph')
             
+            # --- CAPA PRO: Resaltar Vías Rápidas (Estructura Urbana) ---
+            # Extraer avenidas para dibujarlas como referencia visual
+            for u, v, data in G.edges(data=True):
+                if any(av in str(data.get('highway', '')).lower() for av in ['primary', 'secondary']):
+                    pts = [(G.nodes[u]['y'], G.nodes[u]['x']), (G.nodes[v]['y'], G.nodes[v]['x'])]
+                    folium.PolyLine(pts, color='# CBD5E1', weight=2, opacity=0.3).add_to(m)
+
             # Dibujar las 3 rutas
             if r_rap:
                 coords_rap = [(G.nodes[n]['y'], G.nodes[n]['x']) for n in r_rap]
@@ -289,16 +341,22 @@ with col_main:
             folium.Marker(c_orig, popup=f"<b>{orig_lbl}</b>", icon=folium.Icon(color="black", icon="play", prefix="fa")).add_to(m)
             folium.Marker(c_dest, popup=f"<b>{dest_lbl}</b>", icon=folium.Icon(color="green", icon="flag", prefix="fa")).add_to(m)
             
-            # Capas de transporte
+            # Capas de transporte multi-color con Iconos Pro
             estaciones = obtener_transporte()
             for est in estaciones:
-                folium.CircleMarker(
+                # Iconografía profesional por tipo
+                icon_map = {
+                    "Metro": "subway",
+                    "Metrobús": "bus",
+                    "Trolebús": "bolt"
+                }
+                icon_name = icon_map.get(est['tipo'], "info-circle")
+                
+                folium.Marker(
                     [est['lat'], est['lon']],
-                    radius=5,
-                    color='orange',
-                    fill=True,
-                    popup=f"Estación: {est['name']}",
-                    tooltip="Transporte Público"
+                    icon=folium.Icon(color=est['color'], icon=icon_name, prefix="fa"),
+                    popup=f"<b>{est['name']}</b>",
+                    tooltip=f"{est['tipo']} CDMX"
                 ).add_to(m)
 
             # --- AJUSTE DINÁMICO DEL MAPA (Auto-zoom) ---

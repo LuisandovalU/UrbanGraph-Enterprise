@@ -35,8 +35,9 @@ def aplicar_formula_sandoval(G, weather_impact=1.0, hurry_factor=50.0):
     for u, v, k, data in G.edges(keys=True, data=True):
         segment_length = data.get('length', 10.0)
         street_name = str(data.get('name', '')).lower()
+        highway_type = str(data.get('highway', '')).lower()
         
-        # Lógica de riesgo base
+        # Lógica de riesgo base (Lineal)
         risk_multiplier = RISK_PROFILE["WEIGHTS"]["STANDARD"]
         
         if any(safe_key in street_name for safe_key in RISK_PROFILE["KEYWORDS"]["SAFE"]):
@@ -45,12 +46,17 @@ def aplicar_formula_sandoval(G, weather_impact=1.0, hurry_factor=50.0):
         if any(danger_key in street_name for danger_key in RISK_PROFILE["KEYWORDS"]["DANGER"]):
             risk_multiplier = RISK_PROFILE["WEIGHTS"]["DANGER"]
             
-        # AUDACIA SANDOVAL: Reducir intensidad del riesgo si hay prisa
-        # Si h_ratio=1.0 (prisa máx), el multiplicador de riesgo tiende a 1.0 (neutral)
-        impacto_riesgo = 1.0 + (risk_multiplier - 1.0) * s_ratio
+        # BONO DE AVENIDAS (Vías Rápidas)
+        # Si es una avenida principal, reducimos su costo base para favorecer flujo
+        avenue_bonus = 0.7 if any(av in highway_type for av in ['primary', 'secondary', 'tertiary']) else 1.0
         
-        # Fórmula Sandoval 2.1: Balance dinámico
-        data['final_impedance'] = (segment_length * h_ratio) + (segment_length * impacto_riesgo * weather_impact * s_ratio)
+        # AUDACIA SANDOVAL 2.2: Reducción lineal de riesgo
+        # El riesgo se diluye a medida que aumenta h_ratio
+        impacto_riesgo_reducido = 1.0 + (risk_multiplier - 1.0) * s_ratio
+        
+        # Impedancia Pro: (Longitud * BonoAvenida * Prisa) + (Riesgo * Seguridad)
+        data['final_impedance'] = (segment_length * avenue_bonus * h_ratio) + \
+                                 (segment_length * impacto_riesgo_reducido * weather_impact * s_ratio)
         
     return G
 
