@@ -35,6 +35,22 @@ def aplicar_formula_sandoval(G, weather_impact=1.0, hurry_factor=50.0):
     for u, v, k, data in G.edges(keys=True, data=True):
         segment_length = data.get('length', 10.0)
         street_name = str(data.get('name', '')).lower()
+        
+        # Extracción segura de highway (manejo de listas de OSMnx)
+        highway = data.get('highway', 'unclassified')
+        if isinstance(highway, list):
+            highway = highway[0]
+        highway_type = str(highway).lower()
+        
+        # Lógica de riesgo base (Lineal)
+        risk_multiplier = RISK_PROFILE["WEIGHTS"]["STANDARD"]
+        
+        if any(safe_key in street_name for safe_key in RISK_PROFILE["KEYWORDS"]["SAFE"]):
+            risk_multiplier = RISK_PROFILE["WEIGHTS"]["SAFE"]
+            
+        if any(danger_key in street_name for danger_key in RISK_PROFILE["KEYWORDS"]["DANGER"]):
+            risk_multiplier = RISK_PROFILE["WEIGHTS"]["DANGER"]
+            
         # BONO DE VÍAS (Ingeniería Geoespacial)
         # Prioridad 1: Avenidas principales por nombre o tag
         is_avenue = any(av in street_name for av in ['insurgentes', 'eje central', 'universidad', 'cuauhtemoc', 'division del norte'])
@@ -55,7 +71,6 @@ def aplicar_formula_sandoval(G, weather_impact=1.0, hurry_factor=50.0):
         riesgo_ajustado = riesgo_base * dynamic_s_ratio
         
         # Impedancia Pro 2.4: Balance multi-criterio
-        # Notar que avenue_bonus y path_bonus benefician tanto a la longitud como al riesgo
         data['final_impedance'] = (segment_length * avenue_bonus * path_bonus * h_ratio) + \
                                  (segment_length * riesgo_ajustado * 5.0 * dynamic_s_ratio)
         
