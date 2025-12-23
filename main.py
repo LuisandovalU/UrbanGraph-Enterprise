@@ -4,14 +4,19 @@ from pydantic import BaseModel, Field
 from typing import List, Tuple
 import engine
 
+import os
+
 # Simulación de Seguridad Enterprise
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+# En producción, esto vendría de un Vault o Variable de Entorno
+SECRET_TOKEN = os.getenv("URBANGRAPH_TOKEN", "sandoval-enterprise-token-2025")
+
 def verify_token(token: str = Depends(oauth2_scheme)):
-    if token != "sandoval-enterprise-token-2025":
+    if token != SECRET_TOKEN:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Credenciales de API inválidas",
+            detail="Credenciales de API inválidas o expiradas",
             headers={"WWW-Authenticate": "Bearer"},
         )
     return token
@@ -29,18 +34,21 @@ class RouteRequest(BaseModel):
     origin: Tuple[float, float] = Field(..., description="(lat, lon) del origen", example=(19.4146, -99.1697))
     destination: Tuple[float, float] = Field(..., description="(lat, lon) del destino", example=(19.4206, -99.1626))
     weather_condition: str = Field("clear", description="Condición climática (clear, rainy, flooded)")
+    hurry_factor: float = Field(50.0, ge=0, le=100, description="Factor de prisa (0: Seguridad, 100: Rapidez)")
 
     @property
     def weather_factor(self):
         factors = {"clear": 1.0, "rainy": 1.5, "flooded": 3.0}
         return factors.get(self.weather_condition.lower(), 1.0)
 
-    @property
-    def valid_coords(self):
-        for lat, lon in [self.origin, self.destination]:
-            if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
-                return False
-        return True
+    from pydantic import validator
+
+    @validator('origin', 'destination')
+    def validate_coordinates(cls, v):
+        lat, lon = v
+        if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+            raise ValueError("Coordenadas geográficas fuera de rango")
+        return v
 
 # Modelo de datos para la respuesta
 class RouteResponse(BaseModel):
@@ -65,13 +73,15 @@ async def get_safe_route(request: RouteRequest, token: str = Depends(verify_toke
     Calcula una ruta optimizada para seguridad basada en la Fórmula Sandoval.
     Requiere autenticación Bearer Token.
     """
-    if not request.valid_coords:
-        raise HTTPException(status_code=400, detail="Coordenadas geográficas inválidas (fuera de rango).")
+    # La validación de coordenadas ahora es automática vía Pydantic Validator
     
     try:
-        # Reprocesar pesos dinámicos según el clima solicitado
-        # NOTA: En producción, usaríamos un middleware para no reprocesar todo el grafo en cada request
-        G_local = engine.aplicar_formula_sandoval(G_processed, weather_impact=request.weather_factor)
+        # Reprocesar pesos dinámicos según el clima y la prisa solicitados
+        G_local = engine.aplicar_formula_sandoval(
+            G_processed, 
+            weather_impact=request.weather_factor,
+            hurry_factor=request.hurry_factor
+        )
         
         ruta, n_orig, n_dest = engine.calcular_ruta_optima(
             G_local, 
@@ -95,5 +105,10 @@ async def get_safe_route(request: RouteRequest, token: str = Depends(verify_toke
             destination_node=n_dest,
             ai_explanation=explicacion
         )
+    except nx.NetworkXNoPath:
+        raise HTTPException(
+            status_code=404, 
+            detail="No se encontró conectividad entre los puntos seleccionados en el grafo actual."
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error interno del motor: {str(e)}")

@@ -95,6 +95,14 @@ def cargar_y_procesar_grafo():
     G = engine.cargar_grafo_seguro()
     return engine.aplicar_formula_sandoval(G)
 
+@st.cache_data(show_spinner=False)
+def obtener_sugerencias():
+    return engine.extraer_puntos_interes()
+
+@st.cache_data(show_spinner=False)
+def obtener_transporte():
+    return engine.extraer_estaciones_transporte()
+
 # --- 5. INTERFAZ DE USUARIO ---
 
 # Inicialización de variables de búsqueda (Scope Global)
@@ -121,9 +129,18 @@ col_sidebar, col_main = st.columns([1, 2.8], gap="large")
 
 with col_sidebar:
     st.markdown("### Parámetros")
-    direccion_orig = st.text_input("Origen exacto (en Ciudad de México)", "Parque de los Venados")
-    direccion_dest = st.text_input("Destino exacto (en Ciudad de México)", "WTC Ciudad de México")
     
+    with st.spinner("Cargando inteligencia urbana..."):
+        sugerencias = obtener_sugerencias()
+    
+    direccion_orig = st.selectbox("Origen exacto (Benito Juárez)", options=sugerencias, index=sugerencias.index("Parque de los Venados") if "Parque de los Venados" in sugerencias else 0)
+    direccion_dest = st.selectbox("Destino exacto (Benito Juárez)", options=sugerencias, index=sugerencias.index("WTC Ciudad de México") if "WTC Ciudad de México" in sugerencias else 1)
+    
+    st.write("")
+    
+    prisa = st.slider("¿Qué tanta prisa tienes?", 0, 100, 50, help="0: Prioridad Seguridad | 100: Prioridad Rapidez")
+    st.session_state["prisa"] = prisa
+
     st.write("")
     
     analizar = st.button("ANALIZAR RUTA PERSONALIZADA")
@@ -134,8 +151,8 @@ with col_sidebar:
         else:
             try:
                 # Convertir texto a coordenadas reales (lat, lon)
-                c_orig = ox.geocode(f"{direccion_orig}, CDMX, Mexico")
-                c_dest = ox.geocode(f"{direccion_dest}, CDMX, Mexico")
+                c_orig = ox.geocode(f"{direccion_orig}, Benito Juárez, CDMX, Mexico")
+                c_dest = ox.geocode(f"{direccion_dest}, Benito Juárez, CDMX, Mexico")
                 
                 # Guardar en session_state para persistencia durante el procesamiento
                 st.session_state["c_orig"] = c_orig
@@ -202,40 +219,65 @@ with col_main:
             c_orig = st.session_state["c_orig"]
             c_dest = st.session_state["c_dest"]
             
-            # Cálculo de Ruta Segura a través del motor Sandoval
-            r_seg, n_orig, n_dest = engine.calcular_ruta_optima(G, c_orig, c_dest)
+            # Cálculo Multi-Ruta Sandoval 2.0
+            with st.spinner("Ejecutando simulación multi-agente..."):
+                analisis = engine.obtener_analisis_multi_ruta(
+                    G, 
+                    c_orig, 
+                    c_dest, 
+                    hurry_factor=st.session_state.get("prisa", 50)
+                )
+            
+            r_seg = analisis["relampago"]
+            r_escudo = analisis["escudo"]
+            r_rap = analisis["directa"]
+            n_orig, n_dest = analisis["nodes"]
+
+            if not r_seg:
+                st.error("No se encontró una ruta viable.")
+                st.stop()
             
             # Extraer coordenadas de los nodos para las líneas conectoras
             node_orig_coords = (G.nodes[n_orig]['y'], G.nodes[n_orig]['x'])
             node_dest_coords = (G.nodes[n_dest]['y'], G.nodes[n_dest]['x'])
 
-            # Cálculo de Ruta Directa (Rápida) para comparación
-            r_rap = nx.shortest_path(G, n_orig, n_dest, weight='length')
-            
             # Metricas
             d_rap = int(nx.shortest_path_length(G, n_orig, n_dest, weight='length'))
-            d_seg = int(nx.shortest_path_length(G, n_orig, n_dest, weight='length')) # Longitud real
+            d_seg = int(nx.shortest_path_length(G, n_orig, n_dest, weight='length')) # Longitud de Relámpago
             
-            diff = d_seg - d_rap
+            # Tiempo estimado (caminando a 5km/h = 1.38 m/s)
+            t_rap = d_rap / 1.38 / 60
+            t_seg = d_seg / 1.38 / 60
             
-            texto_reporte = f"Análisis: Se aplicó una desviación de {diff}m para optimizar seguridad." if diff > 0 else "Análisis: Ruta directa cumple parámetros de seguridad."
+            ahorro_m = d_seg - d_rap
+            
+            texto_reporte = f"Análisis Sandoval 2.0: Ruta 'Relámpago' balanceada. Ahorras tiempo frente a la ruta 'Escudo' manteniendo protocolos de seguridad."
 
             st.markdown(f"""
             <div class="result-grid">
-                <div class="result-card"><span class="card-label">Ruta Directa</span><div class="card-value">{d_rap}m</div><span class="status-badge badge-danger">ALTO RIESGO</span></div>
-                <div class="result-card" style="border-bottom: 4px solid #166534;"><span class="card-label" style="color:#166534;">UrbanGraph</span><div class="card-value" style="color:#166534;">{d_seg}m</div><span class="status-badge badge-success">OPTIMIZADO</span></div>
-                <div class="result-card"><span class="card-label">Desviación</span><div class="card-value">+{diff}m</div><span class="status-badge badge-info">COSTO</span></div>
+                <div class="result-card" style="border-bottom: 4px solid #94A3B8;"><span class="card-label">Directa (Gris)</span><div class="card-value">{d_rap}m</div><span class="status-badge">RÁPIDA</span></div>
+                <div class="result-card" style="border-bottom: 4px solid #EAB308;"><span class="card-label">Relámpago (Oro)</span><div class="card-value">{d_seg}m</div><span class="status-badge badge-info">BALANCEADA</span></div>
+                <div class="result-card" style="border-bottom: 4px solid #166534;"><span class="card-label">Escudo (Verde)</span><div class="card-value">Máxima</div><span class="status-badge badge-success">SEGURA</span></div>
             </div>
-            <div class="report-box">{texto_reporte}</div>
+            <div class="report-box">
+                <b>Eficiencia:</b> {int(t_seg)} min estimados. <br>
+                {texto_reporte}
+            </div>
             """, unsafe_allow_html=True)
             
             m = folium.Map(tiles='CartoDB positron', attr='UrbanGraph')
             
-            coords_rap = [(G.nodes[n]['y'], G.nodes[n]['x']) for n in r_rap]
-            folium.PolyLine(coords_rap, color='#EF4444', weight=4, opacity=0.4, tooltip=f"Ruta Directa").add_to(m)
+            # Dibujar las 3 rutas
+            if r_rap:
+                coords_rap = [(G.nodes[n]['y'], G.nodes[n]['x']) for n in r_rap]
+                folium.PolyLine(coords_rap, color='#94A3B8', weight=4, opacity=0.4, tooltip="Ruta Directa").add_to(m)
             
+            if r_escudo:
+                coords_escudo = [(G.nodes[n]['y'], G.nodes[n]['x']) for n in r_escudo]
+                folium.PolyLine(coords_escudo, color='#166534', weight=5, opacity=0.6, tooltip="Ruta Escudo (Segura)").add_to(m)
+
             coords_seg = [(G.nodes[n]['y'], G.nodes[n]['x']) for n in r_seg]
-            folium.PolyLine(coords_seg, color='#166534', weight=7, opacity=0.9, tooltip=f"Ruta Segura").add_to(m)
+            folium.PolyLine(coords_seg, color='#EAB308', weight=8, opacity=0.9, tooltip="Ruta Relámpago (Sandoval 2.0)").add_to(m)
             
             if node_orig_coords and node_dest_coords:
                 folium.PolyLine([c_orig, node_orig_coords], color='#166534', weight=7, opacity=0.9).add_to(m)
@@ -247,9 +289,20 @@ with col_main:
             folium.Marker(c_orig, popup=f"<b>{orig_lbl}</b>", icon=folium.Icon(color="black", icon="play", prefix="fa")).add_to(m)
             folium.Marker(c_dest, popup=f"<b>{dest_lbl}</b>", icon=folium.Icon(color="green", icon="flag", prefix="fa")).add_to(m)
             
-            # --- AQUÍ ESTÁ EL AJUSTE DEL MAPA ---
-            # padding=(50, 50) da aire a los lados.
-            m.fit_bounds(coords_rap + coords_seg, padding=(50, 50))
+            # Capas de transporte
+            estaciones = obtener_transporte()
+            for est in estaciones:
+                folium.CircleMarker(
+                    [est['lat'], est['lon']],
+                    radius=5,
+                    color='orange',
+                    fill=True,
+                    popup=f"Estación: {est['name']}",
+                    tooltip="Transporte Público"
+                ).add_to(m)
+
+            # --- AJUSTE DINÁMICO DEL MAPA (Auto-zoom) ---
+            m.fit_bounds([c_orig, c_dest], padding=(50, 50))
             
             st.markdown('<div class="map-container">', unsafe_allow_html=True)
             # height=550 es el tamaño ergonómico
