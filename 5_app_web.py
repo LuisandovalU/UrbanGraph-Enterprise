@@ -115,24 +115,28 @@ col_sidebar, col_main = st.columns([1, 2.8], gap="large")
 
 with col_sidebar:
     st.markdown("### Parámetros")
-    lugares = {
-        "Parque España": (19.4146, -99.1697),
-        "Plaza Río de Janeiro": (19.4206, -99.1626),
-        "Fuente de Cibeles": (19.4195, -99.1685),
-        "Álvaro Obregón (Inicio)": (19.4188, -99.1609),
-        "Álvaro Obregón (Fin)": (19.4208, -99.1566),
-        "Metro Insurgentes": (19.4234, -99.1631)
-    }
-    origen = st.selectbox("Punto A (Origen)", list(lugares.keys()), index=0)
-    destino = st.selectbox("Punto B (Destino)", list(lugares.keys()), index=1)
+    direccion_orig = st.text_input("Origen exacto (en Ciudad de México)", "Parque de los Venados")
+    direccion_dest = st.text_input("Destino exacto (en Ciudad de México)", "WTC Ciudad de México")
     
     st.write("")
     
-    if st.button("EJECUTAR ANÁLISIS"):
-        if origen == destino:
+    analizar = st.button("ANALIZAR RUTA PERSONALIZADA")
+    
+    if analizar:
+        if direccion_orig == direccion_dest:
             st.error("⚠️ Error de Lógica: Origen y destino son idénticos.")
         else:
-            st.session_state["rutas_calculadas"] = True
+            try:
+                # Convertir texto a coordenadas reales (lat, lon)
+                c_orig = ox.geocode(f"{direccion_orig}, CDMX, Mexico")
+                c_dest = ox.geocode(f"{direccion_dest}, CDMX, Mexico")
+                
+                # Guardar en session_state para persistencia durante el procesamiento
+                st.session_state["c_orig"] = c_orig
+                st.session_state["c_dest"] = c_dest
+                st.session_state["rutas_calculadas"] = True
+            except Exception as ge_error:
+                st.error(f"📍 No encontré esa dirección: {ge_error}. Intenta ser más específico.")
             
     st.markdown("---")
     
@@ -187,8 +191,8 @@ with col_main:
             with st.spinner("Procesando topología urbana..."):
                 G = cargar_y_procesar_grafo()
             
-            c_orig = lugares[origen]
-            c_dest = lugares[destino]
+            c_orig = st.session_state["c_orig"]
+            c_dest = st.session_state["c_dest"]
             
             # Cálculo de Ruta Segura a través del motor Sandoval
             r_seg, n_orig, n_dest = engine.calcular_ruta_optima(G, c_orig, c_dest)
