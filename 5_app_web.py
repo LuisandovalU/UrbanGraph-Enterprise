@@ -20,7 +20,8 @@ def cargar_configuracion():
     st.set_page_config(
         page_title="UrbanOS 2040 Tactical Console", 
         layout="wide", 
-        page_icon="icono_u.jpg"
+        page_icon="icono_u.jpg",
+        initial_sidebar_state="expanded"
     )
 
 cargar_configuracion()
@@ -44,40 +45,69 @@ def get_base64_image_cached(image_path):
 # --- 3. CSS (SENIOR FULLSTACK REFACTOR - MacBook Air M4 Optimized) ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     
-    html, body, [data-testid="stAppViewContainer"] {
-        overflow: hidden;
-        height: 100vh;
+    /* Configuración Global de Fuente Look Apple */
+    html, body, [data-testid="stAppViewContainer"], .stApp {
+        font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif !important;
         background-color: #FFFFFF;
     }
+
+    /* Eliminar Espaciado Lateral Streamlit */
     .block-container {
-        padding: 0rem !important;
+        padding-top: 0rem !important;
+        padding-bottom: 0rem !important;
+        padding-left: 0rem !important;
+        padding-right: 0rem !important;
         max-width: 100% !important;
     }
-    header, footer, #MainMenu { visibility: hidden; }
 
-    .stApp { background-color: #FFFFFF; font-family: 'Inter', sans-serif; color: #1E293B; }
+    /* Ocultar Menú y Footer */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    [data-testid="stHeader"] {display: none;}
+
+    /* Sidebar Minimalista */
+    [data-testid="stSidebar"] {
+        background-color: #FFFFFF !important;
+        border-right: 1px solid #F1F5F9 !important;
+        box-shadow: none !important;
+        min-width: 320px !important;
+    }
     
-    /* Sidebar Aesthetics - Compacted */
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+        padding: 1.5rem 1rem !important;
+    }
+
     .sidebar-content { 
-        height: 100vh; 
-        overflow-y: auto; 
-        padding: 12px;
         background-color: #FFFFFF;
-        border-right: 1px solid #F1F5F9;
     }
 
     .header-container { 
-        padding-bottom: 8px;
-        margin-bottom: 8px;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
         border-bottom: 1px solid #F8FAFC;
     }
-    .brand-title { font-size: 1.8rem; font-weight: 300; color: #000; line-height: 1; margin: 0; letter-spacing: -1.5px; }
-    .brand-title b { font-weight: 880; color: #000; font-size: 2.1rem; }
+    .brand-title { 
+        font-size: 1.8rem !important; 
+        font-weight: 800 !important; 
+        color: #000 !important; 
+        line-height: 1 !important; 
+        margin: 0 !important; 
+        letter-spacing: -1.5px !important;
+        font-family: 'Inter', sans-serif !important;
+        display: block !important;
+    }
+    .brand-title b { 
+        font-weight: 880 !important; 
+        color: #000 !important; 
+        font-size: 2.1rem !important; 
+        display: block !important;
+    }
     .brand-subtitle { font-size: 0.55rem; color: #94A3B8; font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px; }
 
-    /* Top Metrics Bar - Pure Sans */
+    /* Top Metrics Bar */
     .metrics-bar {
         display: flex;
         justify-content: space-around;
@@ -85,7 +115,7 @@ st.markdown("""
         background: #FFFFFF;
         padding: 8px 0;
         border-bottom: 1px solid #F1F5F9;
-        height: 55px;
+        height: 60px;
     }
     .metric-card {
         text-align: center;
@@ -94,57 +124,73 @@ st.markdown("""
         flex-grow: 1;
     }
     .metric-card:last-child { border-right: none; }
-    .metric-label { font-size: 0.5rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 1px; }
-    .metric-value { font-size: 1.1rem; font-weight: 800; color: #0F172A; }
+    .metric-label { font-size: 0.55rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px; }
+    .metric-value { font-size: 1.2rem; font-weight: 800; color: #0F172A; }
     .metric-value.blue { color: #0EA5E9; }
     .metric-value.green { color: #10B981; }
 
-    /* Zero-Scroll Widget Optimization */
-    [data-testid="stVerticalBlock"] > div { gap: 0.5rem !important; }
-    .stSlider > div [data-baseweb="slider"] { margin-bottom: -12px; }
-    .stSlider label, .stSelectbox label, .stTextInput label { font-size: 0.6rem !important; font-weight: 850 !important; color: #64748B !important; text-transform: uppercase; margin-bottom: 1px; }
-    .stSelectbox > div [data-baseweb="select"] { min-height: 28px; }
+    /* UI Elements Refinement */
+    .stSlider label, .stSelectbox label, .stTextInput label { 
+        font-size: 0.65rem !important; 
+        font-weight: 700 !important; 
+        color: #64748B !important; 
+        text-transform: uppercase; 
+        margin-bottom: 4px; 
+    }
     
+    /* Botones Tácticos */
     .stButton>button {
-        background-color: #EF4444 !important;
+        background-color: #EF4444 !important; /* Rojo Seguridad */
         color: white !important;
-        border-radius: 4px !important;
-        height: 38px !important;
-        font-weight: 850 !important;
-        font-size: 0.75rem !important;
-        letter-spacing: 0.4px !important;
+        border-radius: 4px !important; /* Esquinas casi rectas */
+        height: 42px !important;
+        font-weight: 700 !important;
+        font-size: 0.8rem !important;
+        letter-spacing: 0.5px !important;
         border: none !important;
-        margin-top: 4px !important;
+        width: 100% !important;
+        transition: all 0.2s ease;
+    }
+    .stButton>button:hover {
+        background-color: #DC2626 !important;
+        transform: translateY(-1px);
     }
 
     .legend-sidebar {
-        margin-top: 15px;
-        padding-top: 12px;
+        margin-top: 20px;
+        padding-top: 15px;
         border-top: 1px solid #F1F5F9;
     }
-    .legend-item { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 0.65rem; font-weight: 600; color: #64748B; }
-    .legend-icon { font-size: 0.75rem; width: 12px; text-align: center; }
+    .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.7rem; font-weight: 600; color: #64748B; }
+    .legend-icon { font-size: 0.8rem; width: 14px; text-align: center; }
 
-    .status-footer {
+    .status-footer-fixed {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 320px; /* Ancho del sidebar */
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: #F8FAFC;
+        background: #FFFFFF;
         color: #94A3B8;
-        padding: 0 15px;
-        height: 22px;
-        font-size: 0.55rem;
-        font-weight: 800;
+        padding: 0 20px;
+        height: 32px;
+        font-size: 0.6rem;
+        font-weight: 700;
         text-transform: uppercase;
+        border-top: 1px solid #F1F5F9;
+        z-index: 1000;
     }
-    .status-dot { width: 4px; height: 4px; background: #10B981; border-radius: 50%; display: inline-block; margin-right: 3px; }
+    .status-dot { width: 6px; height: 6px; background: #10B981; border-radius: 50%; display: inline-block; margin-right: 5px; }
     
     .quote-box {
-        margin-top: 12px;
+        margin-top: 20px;
         border-left: 2px solid #F1F5F9;
-        padding-left: 10px;
-        font-size: 0.6rem;
+        padding-left: 12px;
+        font-size: 0.65rem;
         color: #94A3B8;
+        font-style: italic;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -171,28 +217,20 @@ def get_realtime_sync():
 
 @st.cache_data(show_spinner=False)
 def obtener_analisis_tactico(hurry_factor, c_orig, c_dest, incidentes, realtime_data):
-    """Orquesta el análisis multi-ruta con enriquecimiento de estadísticas.
-    
-    Calcula distancia y tiempo para cada trayectoria para alimentar el dashboard.
-    """
     G = obtener_grafo_optimizado()
-    analisis = engine.obtener_analisis_multi_ruta(
-        G, c_orig, c_dest, 
-        hurry_factor=hurry_factor, 
-        incidentes=incidentes, 
-        realtime_data=realtime_data
-    )
+    analisis = engine.obtener_analisis_multi_ruta(G, c_orig, c_dest, hurry_factor, incidentes=incidentes, realtime_data=realtime_data)
     
-    # Inyectar estadísticas de ruta
     for key in ["directa", "relampago", "escudo"]:
         if analisis.get(key):
             try:
-                # Sumar atributos de los bordes
-                lengths = ox.utils_graph.get_route_edge_attributes(G, analisis[key], "length")
-                times = ox.utils_graph.get_route_edge_attributes(G, analisis[key], "travel_time")
-                analisis[f"{key}_dist"] = sum(lengths)
-                analisis[f"{key}_time"] = sum(times) / 60
-            except:
+                # CORRECCIÓN: Usar ox.routing en lugar de ox.utils_graph
+                lengths = ox.routing.route_to_gdf(G, analisis[key])["length"]
+                distancia_total = sum(lengths)
+                analisis[f"{key}_dist"] = distancia_total
+                
+                # Fallback Táctico: 1.2 m/s (Paso peatonal)
+                analisis[f"{key}_time"] = (distancia_total / 1.2) / 60 
+            except Exception as e:
                 analisis[f"{key}_dist"] = 0
                 analisis[f"{key}_time"] = 0
                 
@@ -254,15 +292,14 @@ col_side, col_main = st.columns([0.25, 0.75], gap="small")
 
 with col_side:
     st.markdown('''
-    <div class="sidebar-content">
-        <div class="header-container">
-            <h1 class="brand-title"><b>U</b>RBANgraph</h1>
-            <div class="brand-subtitle">Plataforma de Análisis Topológico | Ingeniería Mexicana</div>
-        </div>
-        
-        <div style="font-size: 0.65rem; color: #94A3B8; margin-top: -5px; line-height: 1.3; margin-bottom: 20px; font-weight: 500;">
-            Motor de Inteligencia Espacial optimizado para la gestión de riesgos y movilidad urbana.
-        </div>
+    <div class="header-container">
+        <h1 class="brand-title"><b>U</b>RBANgraph</h1>
+        <div class="brand-subtitle">Plataforma de Análisis Topológico | Ingeniería Mexicana</div>
+    </div>
+    
+    <div style="font-size: 0.65rem; color: #94A3B8; margin-top: -5px; line-height: 1.3; margin-bottom: 20px; font-weight: 500;">
+        Motor de Inteligencia Espacial optimizado para la gestión de riesgos y movilidad urbana.
+    </div>
     ''', unsafe_allow_html=True)
     
     opciones = list(COORDENADAS_FIJAS.keys()) + ["-- Manual --"]
@@ -281,38 +318,48 @@ with col_side:
     
     st.markdown('<br>', unsafe_allow_html=True)
     if st.button("ANALIZAR RUTA PERSONALIZADA", type="primary", use_container_width=True):
-        try:
-            with st.spinner("Sincronizando..."):
+        with st.spinner("Sincronizando con UrbanOS..."):
+            try:
+                # Geocoding con Fallback Maestro (WTC CDMX / Parque Hundido)
                 try:
                     c_o = COORDENADAS_FIJAS[dir_o]["coords"] if dir_o in COORDENADAS_FIJAS else engine.geocode_with_cache(f"{dir_o}, CDMX")
                     c_d = COORDENADAS_FIJAS[dir_d]["coords"] if dir_d in COORDENADAS_FIJAS else engine.geocode_with_cache(f"{dir_d}, CDMX")
                 except:
-                    # Fallback al Parque Hundido si falla la geolocalización
-                    c_o = (19.378, -99.178)
-                    c_d = (19.407, -99.154) # Default destination (Centro Médico)
-                    st.toast("Ubicación manual activada")
-                
-                st.session_state["incidentes"] = engine.generar_incidentes_sinteticos(obtener_grafo_optimizado())
+                    c_o, c_d = (19.3948, -99.1736), (19.378, -99.178)
+                    st.toast("⚠️ Coordenadas de respaldo activadas")
+
+                G = obtener_grafo_optimizado()
+                st.session_state["incidentes"] = engine.generar_incidentes_sinteticos(G)
                 st.session_state.update({"c_orig": c_o, "c_dest": c_d, "rutas_calculadas": True})
                 st.rerun()
-        except: st.error("Error en motor de análisis.")
+            except Exception as e:
+                st.error(f"Falla en el motor: {str(e)}") # Muestra el error real para debugging
 
-    with st.expander("SIMBOLOGÍA TÁCTICA", expanded=False):
-        st.markdown('''
-        <div class="legend-sidebar">
-            <div class="legend-item"><i class="fa fa-exclamation-triangle legend-icon" style="color:#EF4444"></i> Riesgo C5 (Fatal)</div>
-            <div class="legend-item"><div class="legend-icon" style="color:#10B981">●</div> Ruta Escudo (Segura)</div>
-            <div class="legend-item"><div class="legend-icon" style="color:#EF4444">●</div> Ruta Relámpago (Veloz)</div>
-            <div class="legend-item"><div class="legend-icon" style="color:orange">●</div> Estación Metro</div>
-            <div class="legend-item"><i class="fa fa-bicycle legend-icon" style="color:#F59E0B"></i> Red Ecobici</div>
-        </div>
-        ''', unsafe_allow_html=True)
+    st.markdown('<br>', unsafe_allow_html=True)
+    st.markdown('''
+    <div class="legend-sidebar" style="margin-top: 0px; border-top: none;">
+        <div class="legend-item"><i class="fa fa-exclamation-triangle legend-icon" style="color:#EF4444"></i> Riesgo C5 (Fatal)</div>
+        <div class="legend-item"><div class="legend-icon" style="color:#10B981">●</div> Ruta Escudo (Segura)</div>
+        <div class="legend-item"><div class="legend-icon" style="color:#EF4444">●</div> Ruta Relámpago (Veloz)</div>
+        <div class="legend-item"><div class="legend-icon" style="color:orange">●</div> Estación Metro</div>
+        <div class="legend-item"><i class="fa fa-bicycle legend-icon" style="color:#F59E0B"></i> Red Ecobici</div>
+    </div>
+    ''', unsafe_allow_html=True)
 
     st.markdown('''
         <div class="quote-box">
             Soli Deo Gloria. Ingeniería al servicio del prójimo. Que el sistema sea limpio y funcional.
         </div>
     ''', unsafe_allow_html=True)
+    
+    # Persistent Fixed Footer
+    st.markdown(f'''
+    <div class="status-footer-fixed">
+        <div><span class="status-dot"></span> API ONLINE 2.6.0</div>
+        <div>UrbanGraph Tactical</div>
+    </div>
+    ''', unsafe_allow_html=True)
+    
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_main:
@@ -378,8 +425,5 @@ with col_main:
 
     # 3. Status Footer
     st.markdown(f'''
-    <div class="status-footer">
-        <div><span class="status-dot"></span> Ready</div>
-        <div>UrbanGraph Engine v2.4.1 | High-Fidelity Tactical Console</div>
-    </div>
+    <div class="status-footer" style="display:none;">
     ''', unsafe_allow_html=True)

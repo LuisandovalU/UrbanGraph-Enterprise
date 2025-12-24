@@ -595,5 +595,7 @@ def geocode_with_cache(query: str):
         save_geo_cache()
         return coords
     except Exception as e:
-        logger.error(f"Geocode Error for {query}: {e}")
-        raise e
+        logger.error(f"Geocode Error for {query}: {e}. Falling back to WTC CDMX.")
+        # Fallback Master: WTC CDMX Coordinates (UrbanGraph Standard)
+        wtc_coords = (19.3948, -99.1736)
+        return wtc_coords

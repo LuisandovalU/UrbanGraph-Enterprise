@@ -16,3 +16,86 @@
 To install, run: pip install email-validator
 2025-12-23 20:43:31,582 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
 2025-12-23 20:48:29,276 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:09:17,897 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:09:21,714 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:09:26,167 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:09:30,741 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:09:34,765 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:09:38,499 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:09:43,023 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:09:49,333 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:09:53,201 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:09:56,948 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:10:00,800 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:10:04,584 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:10:08,567 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:10:12,643 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:10:16,458 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:10:20,437 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:10:24,508 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:10:28,262 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:10:32,287 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:10:36,487 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:10:40,243 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:10:44,010 [INFO] MISSION INITIATED: From BJ-Q21 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:11:51,672 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-23 22:11:54,943 [WARNING] Sync Audit: C5 API Timeout (3s). Circuit Breaker engaged.
+2025-12-23 22:12:19,935 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:12:24,572 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:14:29,089 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:19:06,459 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-23 22:19:07,229 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-23 22:19:37,230 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:19:38,160 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:19:41,070 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:19:46,252 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:19:47,515 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:21:21,554 [ERROR] Geocode Error for Direccion Inventada 12345: Nominatim could not geocode query 'Direccion Inventada 12345'.. Falling back to WTC CDMX.
+2025-12-23 22:21:41,641 [ERROR] Task exception was never retrieved
+future: <Task finished name='Task-627' coro=<WebSocketProtocol13.write_message.<locals>.wrapper() done, defined at /Users/luisalbertosandovalramos/Desktop/UrbanGraph-Engine/venv/lib/python3.13/site-packages/tornado/websocket.py:1111> exception=WebSocketClosedError()>
+Traceback (most recent call last):
+  File "/Users/luisalbertosandovalramos/Desktop/UrbanGraph-Engine/venv/lib/python3.13/site-packages/tornado/websocket.py", line 1113, in wrapper
+    await fut
+tornado.iostream.StreamClosedError: Stream is closed
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/luisalbertosandovalramos/Desktop/UrbanGraph-Engine/venv/lib/python3.13/site-packages/tornado/websocket.py", line 1115, in wrapper
+    raise WebSocketClosedError()
+tornado.websocket.WebSocketClosedError
+2025-12-23 22:22:06,954 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:22:12,106 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:22:35,427 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:22:48,491 [ERROR] Geocode Error for Atlantis, Ciudad de Mexico, CDMX: Nominatim could not geocode query 'Atlantis, Ciudad de Mexico, CDMX'.. Falling back to WTC CDMX.
+2025-12-23 22:28:03,745 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-23 22:28:04,540 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-23 22:28:39,243 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:29:52,769 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-23 22:29:53,553 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-23 22:30:04,160 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:30:15,925 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:30:18,390 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:30:20,812 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:30:22,666 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Coordinates Anonymized]
+2025-12-23 22:30:23,559 [INFO] MISSION INITIATED: From BJ-Q01 to BJ-Q21 [Coordinates Anonymized]
+2025-12-23 22:30:36,769 [INFO] MISSION INITIATED: From BJ-Q01 to BJ-Q21 [Coordinates Anonymized]
+2025-12-23 22:30:38,209 [INFO] MISSION INITIATED: From BJ-Q01 to BJ-Q21 [Coordinates Anonymized]
+2025-12-23 22:30:39,011 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q21 [Coordinates Anonymized]
+2025-12-23 22:30:47,174 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q21 [Coordinates Anonymized]
+2025-12-23 22:30:48,512 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q21 [Coordinates Anonymized]
+2025-12-23 22:30:49,288 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q21 [Coordinates Anonymized]
+2025-12-23 22:30:56,826 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q21 [Coordinates Anonymized]
+2025-12-23 22:30:58,226 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q21 [Coordinates Anonymized]
+2025-12-23 22:30:59,001 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q11 [Coordinates Anonymized]
+2025-12-23 22:31:08,341 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q11 [Coordinates Anonymized]
+2025-12-23 22:31:09,743 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q11 [Coordinates Anonymized]
+2025-12-23 22:31:10,526 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q11 [Coordinates Anonymized]
+2025-12-23 22:31:17,639 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q11 [Coordinates Anonymized]
+2025-12-23 22:31:19,022 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q11 [Coordinates Anonymized]
+2025-12-23 22:31:19,814 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q11 [Coordinates Anonymized]
+2025-12-23 22:31:26,255 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q11 [Coordinates Anonymized]
+2025-12-23 22:31:27,593 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q11 [Coordinates Anonymized]
+2025-12-23 22:31:28,375 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q11 [Coordinates Anonymized]
+2025-12-23 22:31:29,143 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q11 [Coordinates Anonymized]
+2025-12-23 22:31:29,917 [INFO] MISSION INITIATED: From BJ-Q20 to BJ-Q11 [Coordinates Anonymized]
