@@ -6,7 +6,7 @@ from streamlit_folium import st_folium
 import base64
 import os
 import engine
-from engine import logger
+# Logger is handled via logging module if needed
 import random
 import time
 
@@ -41,61 +41,111 @@ def get_base64_image_cached(image_path):
             return base64.b64encode(img_file.read()).decode()
     return None
 
-# --- 3. CSS (DASHBOARD ZERO-SCROLL DARK MODE) ---
+# --- 3. CSS (SENIOR FULLSTACK REFACTOR - MacBook Air M4 Optimized) ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Playfair+Display:wght@700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     
     html, body, [data-testid="stAppViewContainer"] {
         overflow: hidden;
         height: 100vh;
-        background-color: #0F172A;
+        background-color: #FFFFFF;
     }
     .block-container {
-        padding: 0.5rem 1rem !important;
+        padding: 0rem !important;
         max-width: 100% !important;
     }
     header, footer, #MainMenu { visibility: hidden; }
 
-    .stApp { background-color: #0F172A; font-family: 'Manrope', sans-serif; color: #F8FAFC; }
+    .stApp { background-color: #FFFFFF; font-family: 'Inter', sans-serif; color: #1E293B; }
     
+    /* Sidebar Aesthetics - Compacted */
     .sidebar-content { 
-        height: calc(100vh - 40px); 
+        height: 100vh; 
         overflow-y: auto; 
-        padding-right: 15px;
+        padding: 12px;
+        background-color: #FFFFFF;
+        border-right: 1px solid #F1F5F9;
     }
 
     .header-container { 
-        display: flex; 
-        align-items: center; 
-        gap: 12px; 
-        padding-bottom: 8px; 
-        border-bottom: 1px solid #1E293B; 
-        margin-bottom: 10px; 
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #F8FAFC;
     }
-    .logo-img { width: 45px; height: 45px; object-fit: contain; border-radius: 6px; border: 1px solid #334155; }
-    .brand-title { font-size: 1.6rem; font-weight: 800; color: #F8FAFC; line-height: 1; margin: 0; letter-spacing: -0.5px; }
-    .brand-subtitle { font-size: 0.7rem; color: #94A3B8; font-weight: 500; }
+    .brand-title { font-size: 1.8rem; font-weight: 300; color: #000; line-height: 1; margin: 0; letter-spacing: -1.5px; }
+    .brand-title b { font-weight: 880; color: #000; font-size: 2.1rem; }
+    .brand-subtitle { font-size: 0.55rem; color: #94A3B8; font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px; }
 
-    .result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
-    .result-card { background: #1E293B; border: 1px solid #334155; border-radius: 6px; padding: 10px; }
-    .card-label { font-size: 0.6rem; text-transform: uppercase; font-weight: 700; color: #64748B; display: block; margin-bottom: 2px; }
-    .card-value { font-size: 1.2rem; font-weight: 700; color: #F8FAFC; }
+    /* Top Metrics Bar - Pure Sans */
+    .metrics-bar {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background: #FFFFFF;
+        padding: 8px 0;
+        border-bottom: 1px solid #F1F5F9;
+        height: 55px;
+    }
+    .metric-card {
+        text-align: center;
+        padding: 0 12px;
+        border-right: 1px solid #F1F5F9;
+        flex-grow: 1;
+    }
+    .metric-card:last-child { border-right: none; }
+    .metric-label { font-size: 0.5rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 1px; }
+    .metric-value { font-size: 1.1rem; font-weight: 800; color: #0F172A; }
+    .metric-value.blue { color: #0EA5E9; }
+    .metric-value.green { color: #10B981; }
+
+    /* Zero-Scroll Widget Optimization */
+    [data-testid="stVerticalBlock"] > div { gap: 0.5rem !important; }
+    .stSlider > div [data-baseweb="slider"] { margin-bottom: -12px; }
+    .stSlider label, .stSelectbox label, .stTextInput label { font-size: 0.6rem !important; font-weight: 850 !important; color: #64748B !important; text-transform: uppercase; margin-bottom: 1px; }
+    .stSelectbox > div [data-baseweb="select"] { min-height: 28px; }
     
-    .status-badge { font-size: 0.55rem; font-weight: 800; padding: 1px 4px; border-radius: 2px; }
-    .badge-info { background: #0EA5E9; color: white; }
-    .badge-success { background: #10B981; color: white; }
-    .badge-danger { background: #EF4444; color: white; }
+    .stButton>button {
+        background-color: #EF4444 !important;
+        color: white !important;
+        border-radius: 4px !important;
+        height: 38px !important;
+        font-weight: 850 !important;
+        font-size: 0.75rem !important;
+        letter-spacing: 0.4px !important;
+        border: none !important;
+        margin-top: 4px !important;
+    }
 
-    .map-container { height: 700px; border-radius: 10px; overflow: hidden; border: 1px solid #334155; position: relative; }
+    .legend-sidebar {
+        margin-top: 15px;
+        padding-top: 12px;
+        border-top: 1px solid #F1F5F9;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 0.65rem; font-weight: 600; color: #64748B; }
+    .legend-icon { font-size: 0.75rem; width: 12px; text-align: center; }
 
-    /* Compact UI for Tactical Mode */
-    .stSlider > div [data-baseweb="slider"] { margin-bottom: 0px; }
-    .stSelectbox { margin-bottom: -10px; }
+    .status-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #F8FAFC;
+        color: #94A3B8;
+        padding: 0 15px;
+        height: 22px;
+        font-size: 0.55rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .status-dot { width: 4px; height: 4px; background: #10B981; border-radius: 50%; display: inline-block; margin-right: 3px; }
     
-    .observability-panel { background: #0F172A; border: 1px solid #1E293B; border-radius: 6px; padding: 8px; margin-top: 10px; }
-    .obs-item { display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 3px; color: #94A3B8; }
-    .obs-value { font-weight: 700; color: #F8FAFC; }
+    .quote-box {
+        margin-top: 12px;
+        border-left: 2px solid #F1F5F9;
+        padding-left: 10px;
+        font-size: 0.6rem;
+        color: #94A3B8;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -121,25 +171,32 @@ def get_realtime_sync():
 
 @st.cache_data(show_spinner=False)
 def obtener_analisis_tactico(hurry_factor, c_orig, c_dest, incidentes, realtime_data):
-    """Calcula el vector táctico para las tres rutas soportadas.
-
-    Args:
-        hurry_factor (float): Nivel de optimización temporal (0-100).
-        c_orig (Tuple[float, float]): Origen geográfico.
-        c_dest (Tuple[float, float]): Destino geográfico.
-        incidentes (List[Dict]): Alertas de seguridad activas.
-        realtime_data (Dict): Feed de datos en vivo de APIs.
-
-    Returns:
-        Dict: Resultados del análisis multi-ruta.
+    """Orquesta el análisis multi-ruta con enriquecimiento de estadísticas.
+    
+    Calcula distancia y tiempo para cada trayectoria para alimentar el dashboard.
     """
     G = obtener_grafo_optimizado()
-    return engine.obtener_analisis_multi_ruta(
+    analisis = engine.obtener_analisis_multi_ruta(
         G, c_orig, c_dest, 
         hurry_factor=hurry_factor, 
         incidentes=incidentes, 
         realtime_data=realtime_data
     )
+    
+    # Inyectar estadísticas de ruta
+    for key in ["directa", "relampago", "escudo"]:
+        if analisis.get(key):
+            try:
+                # Sumar atributos de los bordes
+                lengths = ox.utils_graph.get_route_edge_attributes(G, analisis[key], "length")
+                times = ox.utils_graph.get_route_edge_attributes(G, analisis[key], "travel_time")
+                analisis[f"{key}_dist"] = sum(lengths)
+                analisis[f"{key}_time"] = sum(times) / 60
+            except:
+                analisis[f"{key}_dist"] = 0
+                analisis[f"{key}_time"] = 0
+                
+    return analisis
 
 def render_b2g_analysis(incidentes):
     """Renderiza el análisis de planeación urbana para autoridades (B2G).
@@ -150,23 +207,23 @@ def render_b2g_analysis(incidentes):
     Args:
         incidentes (List[Dict]): Lista combinada de incidentes reales y sintéticos.
     """
-    st.markdown("### 📊 Planeación Urbana (B2G)")
+    st.markdown("### Planeación Urbana (B2G)")
     if not incidentes:
         st.write("No hay incidentes reportados en este cuadrante.")
         return
     
     st.write(f"Zonas de Intervención: **{len(incidentes)}**")
     for inc in incidentes:
-        with st.expander(f"📍 {inc['tipo']}"):
+        with st.expander(f"Incidente: {inc['tipo']}"):
             st.write(f"Prioridad: **ALTA** (Impacto {inc['impacto']}x)")
-            st.button(f"Sugerir luminaria en coord {list(inc.values())[1:3]}", key=random.random())
+            st.button(f"Sugerir intervención en coord {list(inc.values())[1:3]}", key=random.random())
 
 COORDENADAS_FIJAS = {
     "Metro Zapata": {"coords": (19.3703, -99.1751), "tipo": "metro"},
     "Metro Centro Médico": {"coords": (19.4072, -99.1545), "tipo": "metro"},
-    "Parque Hundido": {"coords": (19.3783, -99.1788), "tipo": "parque"},
-    "Ecobici Mixcoac": {"coords": (19.3745, -99.1821), "tipo": "bicicleta"},
-    "Ecobici Félix Cuevas": {"coords": (19.3734, -99.1775), "tipo": "bicicleta"}
+    "Metro Coyoacán": {"coords": (19.3614, -99.1706), "tipo": "metro"},
+    "Metro Insurgentes Sur": {"coords": (19.3742, -99.1786), "tipo": "metro"},
+    "Ecobici Mixcoac": {"coords": (19.3745, -99.1821), "tipo": "bicicleta"}
 }
 
 # --- 5. INITIALIZATION ---
@@ -174,174 +231,155 @@ COORDENADAS_FIJAS = {
 if "rutas_calculadas" not in st.session_state:
     st.session_state["rutas_calculadas"] = False
 
-# Incidentes sintéticos inicializados perezosamente para evitar 'Blue Screen'
 if "incidentes" not in st.session_state:
     st.session_state["incidentes"] = []
 
-# --- 6. LAYOUT ---
+# --- 6. DATA INGESTION (HEARTBEAT) ---
+realtime_data = get_realtime_sync()
+transporte = engine.extraer_estaciones_transporte()
+analisis = {}
 
-col_side, col_map = st.columns([0.3, 0.7], gap="small")
+if st.session_state["rutas_calculadas"]:
+    analisis = obtener_analisis_tactico(
+        st.session_state["prisa"], 
+        st.session_state["c_orig"], 
+        st.session_state["c_dest"],
+        st.session_state["incidentes"],
+        realtime_data
+    )
+
+# --- 7. MAIN INTERFACE (SIDE BAR + DASHBOARD) ---
+
+col_side, col_main = st.columns([0.25, 0.75], gap="small")
 
 with col_side:
-    logo_b64 = get_base64_image_cached("logo.jpg") or get_base64_image_cached("icono_u.jpg")
-    img_tag = f'<img src="data:image/png;base64,{logo_b64}" class="logo-img">' if logo_b64 else ''
-    st.markdown(f'''
-    <div class="header-container">
-        {img_tag}
-        <div>
-            <h1 class="brand-title">UrbanGraph</h1>
-            <div class="brand-subtitle">Spatial Intelligence & Urban Safety Engine</div>
-            <div style="font-size: 0.65rem; color: #10B981; font-weight: 800; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Powered by Sandoval Formula</div>
+    st.markdown('''
+    <div class="sidebar-content">
+        <div class="header-container">
+            <h1 class="brand-title"><b>U</b>RBANgraph</h1>
+            <div class="brand-subtitle">Plataforma de Análisis Topológico | Ingeniería Mexicana</div>
         </div>
-    </div>''', unsafe_allow_html=True)
-    
-    st.markdown('<div class="sidebar-content">', unsafe_allow_html=True)
+        
+        <div style="font-size: 0.65rem; color: #94A3B8; margin-top: -5px; line-height: 1.3; margin-bottom: 20px; font-weight: 500;">
+            Motor de Inteligencia Espacial optimizado para la gestión de riesgos y movilidad urbana.
+        </div>
+    ''', unsafe_allow_html=True)
     
     opciones = list(COORDENADAS_FIJAS.keys()) + ["-- Manual --"]
-    sel_o = st.selectbox("Punto de Inserción", opciones, index=0)
-    dir_o = st.text_input("📍 Coord. Origen", "") if sel_o == "-- Manual --" else sel_o
     
-    sel_d = st.selectbox("Objetivo Táctico", opciones, index=1)
-    dir_d = st.text_input("🏁 Coord. Destino", "") if sel_d == "-- Manual --" else sel_d
+    col_orig, col_dest = st.columns(2)
+    with col_orig:
+        sel_o = st.selectbox("Punto de Origen", opciones, index=0)
+    with col_dest:
+        sel_d = st.selectbox("Punto de Destino", opciones, index=1)
+        
+    dir_o = st.text_input("Ingresar Origen", "") if sel_o == "-- Manual --" else sel_o
+    dir_d = st.text_input("Ingresar Destino", "") if sel_d == "-- Manual --" else sel_d
     
-    prisa = st.slider("Hurry Factor (Optimization)", 0, 100, st.session_state.get("prisa", 50))
-    st.session_state["prisa"] = prisa
+    st.markdown('<br>', unsafe_allow_html=True)
+    st.slider("Intensidad de Búsqueda", 0, 100, st.session_state.get("prisa", 50), key="prisa")
     
-    modo_b2g = st.toggle("Activar B2G Planning Mode", value=False)
-
-    if st.button("ANALIZAR RED TÁCTICA", type="primary", use_container_width=True):
+    st.markdown('<br>', unsafe_allow_html=True)
+    if st.button("ANALIZAR RUTA PERSONALIZADA", type="primary", use_container_width=True):
         try:
             with st.spinner("Sincronizando..."):
-                c_o = COORDENADAS_FIJAS[dir_o]["coords"] if dir_o in COORDENADAS_FIJAS else ox.geocode(f"{dir_o}, CDMX")
-                c_d = COORDENADAS_FIJAS[dir_d]["coords"] if dir_d in COORDENADAS_FIJAS else ox.geocode(f"{dir_d}, CDMX")
+                try:
+                    c_o = COORDENADAS_FIJAS[dir_o]["coords"] if dir_o in COORDENADAS_FIJAS else engine.geocode_with_cache(f"{dir_o}, CDMX")
+                    c_d = COORDENADAS_FIJAS[dir_d]["coords"] if dir_d in COORDENADAS_FIJAS else engine.geocode_with_cache(f"{dir_d}, CDMX")
+                except:
+                    # Fallback al Parque Hundido si falla la geolocalización
+                    c_o = (19.378, -99.178)
+                    c_d = (19.407, -99.154) # Default destination (Centro Médico)
+                    st.toast("Ubicación manual activada")
                 
-                # Regenerate incidents on new mission
                 st.session_state["incidentes"] = engine.generar_incidentes_sinteticos(obtener_grafo_optimizado())
                 st.session_state.update({"c_orig": c_o, "c_dest": c_d, "rutas_calculadas": True})
                 st.rerun()
-        except: st.error("Fallo de Geolocalización.")
+        except: st.error("Error en motor de análisis.")
 
-    if st.session_state["rutas_calculadas"]:
-        with st.status("📡 Sincronización UrbanOS 2040", expanded=False) as status:
-            st.write("Conectando con Servidores C5...")
-            realtime_data = get_realtime_sync()
-            st.write("Calculando Vector Sandoval (KDTree enabled)...")
-            analisis = obtener_analisis_tactico(
-                st.session_state["prisa"], 
-                st.session_state["c_orig"], 
-                st.session_state["c_dest"],
-                st.session_state["incidentes"],
-                realtime_data
-            )
-            status.update(label="Sincronización Completa ✅", state="complete")
-            
-            G_ref = obtener_grafo_optimizado()
-            n_o, n_d = analisis["nodes"]
-            d_rel = int(nx.shortest_path_length(G_ref, n_o, n_d, weight='length'))
-            t_rel = int(d_rel / 83.3)
-            
-            d_esc = int(nx.shortest_path_length(G_ref, n_o, n_d, weight='length')) if analisis["escudo"] else d_rel
-            integrity = round((d_rel / d_esc * 100), 1) if d_esc > 0 else 100
-            
-            # Cómputo de alertas combinadas
-            total_alerts = len(st.session_state["incidentes"]) + len(realtime_data["incidents"])
-            data_health = realtime_data.get("integrity", "Unknown")
-            health_color = "badge-success" if "Optimal" in data_health else "badge-info" if "Degraded" in data_health else "badge-danger"
+    with st.expander("SIMBOLOGÍA TÁCTICA", expanded=False):
+        st.markdown('''
+        <div class="legend-sidebar">
+            <div class="legend-item"><i class="fa fa-exclamation-triangle legend-icon" style="color:#EF4444"></i> Riesgo C5 (Fatal)</div>
+            <div class="legend-item"><div class="legend-icon" style="color:#10B981">●</div> Ruta Escudo (Segura)</div>
+            <div class="legend-item"><div class="legend-icon" style="color:#EF4444">●</div> Ruta Relámpago (Veloz)</div>
+            <div class="legend-item"><div class="legend-icon" style="color:orange">●</div> Estación Metro</div>
+            <div class="legend-item"><i class="fa fa-bicycle legend-icon" style="color:#F59E0B"></i> Red Ecobici</div>
+        </div>
+        ''', unsafe_allow_html=True)
 
-            st.markdown(f"""
-            <div class="result-grid">
-                <div class="result-card"><span class="card-label">Incidentes C5 Eludidos</span><div class="card-value" style="color: #10B981;">{analisis.get('eluded_incidents', 0)}</div><span class="status-badge badge-success">IMPACT MEASURED</span></div>
-                <div class="result-card"><span class="card-label">Tiempo Relámpago</span><div class="card-value">{t_rel} min</div><span class="status-badge badge-info">REAL-TIME SYNC</span></div>
-                <div class="result-card"><span class="card-label">Integrity Score</span><div class="card-value">{integrity}%</div><span class="status-badge badge-success">VERIFIED</span></div>
-                <div class="result-card"><span class="card-label">Alertas C5 Activas</span><div class="card-value">{total_alerts}</div><span class="status-badge badge-danger">PROACTIVE SAFETY</span></div>
-                <div class="result-card"><span class="card-label">Data Health</span><div class="card-value" style="font-size: 1rem;">{data_health}</div><span class="status-badge {health_color}">SYSTEM</span></div>
-            </div>
-            
-            <div class="observability-panel">
-                <div style="font-size: 0.7rem; font-weight: 800; color: #64748B; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Observabilidad de Sistema</div>
-                <div class="obs-item"><span>Latencia de Red (P99)</span><span class="obs-value">{realtime_data['metrics']['latency_ms']}ms</span></div>
-                <div class="obs-item"><span>Fidelidad de Datos</span><span class="obs-value">{realtime_data['metrics']['fidelity']}%</span></div>
-                <div class="obs-item"><span>Alertas en Radio</span><span class="obs-value">{total_alerts}</span></div>
-                <div class="obs-item"><span>Patrón de Resiliencia</span><span class="obs-value" style="color: #10B981;">Circuit Breaker 3s</span></div>
-            </div>
-
-            <div style="margin-top: 15px;">
-                <details style="background: #0F172A; border: 1px solid #1E293B; border-radius: 8px; padding: 10px; color: #94A3B8; font-size: 0.75rem;">
-                    <summary style="cursor: pointer; font-weight: 800; color: #64748B; text-transform: uppercase;">Panel de Integridad</summary>
-                    <div style="margin-top: 10px;">
-                        <div class="obs-item"><span>C5 Connection</span><span class="obs-value" style="color: {'#10B981' if realtime_data['integrity'] != 'Critical' else '#EF4444'}">{'Active' if realtime_data['integrity'] != 'Critical' else 'Fallback'}</span></div>
-                        <div class="obs-item"><span>Última Sincronía</span><span class="obs-value">{realtime_data['metrics']['last_sync']}</span></div>
-                        <div class="obs-item"><span>Resiliencia Auditor</span><span class="obs-value">Log Active</span></div>
-                    </div>
-                </details>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            if modo_b2g:
-                render_b2g_analysis(st.session_state["incidentes"] + realtime_data["incidents"])
-            else:
-                st.info("UrbanOS 2040: Integridad Asegurada.")
-
-    st.markdown("---")
-    st.caption("Soli Deo Gloria | Enterprise Edition 2.4")
+    st.markdown('''
+        <div class="quote-box">
+            Soli Deo Gloria. Ingeniería al servicio del prójimo. Que el sistema sea limpio y funcional.
+        </div>
+    ''', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-with col_map:
+with col_main:
+    # Top bar is handled within col_main
+    pass
+
+with col_main:
+    # 1. Top Metrics Bar - Pure Sans (No Emojis)
+    t_relajado = int(analisis.get("directa_time", 0))
+    m_ganados = int(analisis.get("directa_time", 0) - analisis.get("relampago_time", 0)) if analisis.get("relampago") else 0
+    distancia = int(analisis.get("relampago_dist", 0) or analisis.get("directa_dist", 0))
+    
+    st.markdown(f'''
+    <div class="metrics-bar">
+        <div class="metric-card">
+            <div class="metric-label">Tiempo Relajado</div>
+            <div class="metric-value blue">{t_relajado} min</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Minutos Ganados</div>
+            <div class="metric-value green">+{m_ganados}</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Distancia Total</div>
+            <div class="metric-value">{distancia}m</div>
+        </div>
+    </div>
+    ''', unsafe_allow_html=True)
+    
+    # 2. Map Area (Fixed Height 700px)
     if not st.session_state["rutas_calculadas"]:
-        st.markdown('<div class="map-container" style="display:flex; align-items:center; justify-content:center; background:#0F172A; border:1px dashed #334155;"><div><h1 style="text-align:center; color:#334155;">UrbanOS 2040</h1><p style="text-align:center; color:#1E293B;">Waiting for tactical input...</p></div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="map-container" style="display:flex; align-items:center; justify-content:center; background:#FFFFFF; height: 700px; border-radius: 8px; border: 1px solid #F8FAFC;"><h2 style="color:#E2E8F0; font-weight:200;">Parámetros de misión requeridos</h2></div>', unsafe_allow_html=True)
     else:
         try:
-            # Note: Using G_ref for geometry, but weights are already applied in background
             G = obtener_grafo_optimizado()
-            realtime_data = get_realtime_sync()
-            analisis = obtener_analisis_tactico(
-                st.session_state["prisa"], 
-                st.session_state["c_orig"], 
-                st.session_state["c_dest"],
-                st.session_state["incidentes"],
-                realtime_data
-            )
-            m = folium.Map(tiles='CartoDB dark_matter', attr='UrbanOS')
+            m = folium.Map(tiles='CartoDB Positron', attr='UrbanGraph', zoom_start=14)
             
             # Draw Paths
             if analisis.get("directa"):
-                folium.PolyLine([(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["directa"]], color='#475569', weight=3, opacity=0.3).add_to(m)
+                folium.PolyLine([(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["directa"]], color='#475569', weight=3, opacity=0.2).add_to(m)
             if analisis.get("escudo"):
-                folium.PolyLine([(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["escudo"]], color='#10B981', weight=5, opacity=0.6).add_to(m)
+                folium.PolyLine([(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["escudo"]], color='#10B981', weight=5, opacity=0.5).add_to(m)
             if analisis.get("relampago"):
-                folium.PolyLine([(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["relampago"]], color='#F59E0B', weight=8, opacity=0.9).add_to(m)
+                folium.PolyLine([(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["relampago"]], color='#EF4444', weight=6, opacity=0.8).add_to(m)
 
-            # Incidents Layer (Sintéticos + Reales) con validación estricta
-            all_icons = st.session_state["incidentes"] + realtime_data.get("incidents", [])
-            for inc in all_icons:
-                try:
-                    lat, lon = float(inc["lat"]), float(inc["lon"])
-                    if abs(lat) > 0 and abs(lon) > 0:
-                        folium.Marker(
-                            [lat, lon],
-                            icon=folium.Icon(color=inc["color"], icon=inc.get("icon", "warning"), prefix="fa"),
-                            tooltip=f"<b>ALERTA C5 {'(REAL)' if 'impacto' in inc and 'icon' not in inc else ''}</b>: {inc['tipo']}"
-                        ).add_to(m)
-                except: continue
+            # Markers (FontAwesome Professionals)
+            incidents_to_render = st.session_state["incidentes"] + realtime_data.get("incidents", [])
+            for inc in incidents_to_render:
+                folium.Marker([inc["lat"], inc["lon"]], 
+                              icon=folium.Icon(color=inc["color"], icon='exclamation-triangle', prefix='fa'), 
+                              tooltip=inc['tipo']).add_to(m)
+            
+            for stn in transporte:
+                folium.CircleMarker([stn['lat'], stn['lon']], radius=2, color=stn['color'], fill=True).add_to(m)
 
-            # Ecobici Layer (Real-time True Stock)
-            bicis = realtime_data.get("ecobici", {})
-            for nombre, info in COORDENADAS_FIJAS.items():
-                try:
-                    if info.get("tipo") == "bicicleta":
-                        stock = bicis.get(nombre, random.choice(list(bicis.values())) if bicis else "0")
-                        color_stock = "#F59E0B" if int(stock) > 0 else "#EF4444"
-                        folium.CircleMarker(
-                            info["coords"], radius=10, color=color_stock, fill=True, 
-                            tooltip=f"Ecobici {nombre}: {stock} disponibles",
-                            popup=f"Status: {'OPERATIVO' if int(stock) > 0 else 'SIN BICIS'}<br>Stock: {stock}"
-                        ).add_to(m)
-                except: continue
+            folium.Marker(st.session_state["c_orig"], icon=folium.Icon(color='green', icon='play', prefix='fa'), tooltip="Origen").add_to(m)
+            folium.Marker(st.session_state["c_dest"], icon=folium.Icon(color='red', icon='flag-checkered', prefix='fa'), tooltip="Destino").add_to(m)
 
-            m.fit_bounds([st.session_state["c_orig"], st.session_state["c_dest"]], padding=(100, 100))
+            m.fit_bounds([st.session_state["c_orig"], st.session_state["c_dest"]], padding=(30, 30))
             st_folium(m, width=None, height=700, returned_objects=[])
         except Exception as e:
-            st.error("⚠️ Error al renderizar capas dinámicas. Mostrando mapa base de contingencia.")
-            m_base = folium.Map(tiles='CartoDB dark_matter', attr='UrbanGraph Base')
-            st_folium(m_base, width=None, height=700, returned_objects=[])
-            logger.error(f"UI Force Render Error: {e}")
+            st.error(f"Render Error: {e}")
+
+    # 3. Status Footer
+    st.markdown(f'''
+    <div class="status-footer">
+        <div><span class="status-dot"></span> Ready</div>
+        <div>UrbanGraph Engine v2.4.1 | High-Fidelity Tactical Console</div>
+    </div>
+    ''', unsafe_allow_html=True)

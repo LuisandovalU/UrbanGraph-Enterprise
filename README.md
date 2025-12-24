@@ -6,13 +6,18 @@ UrbanOS 2040 es la evolución de UrbanGraph hacia un ecosistema de grado guberna
 
 ---
 
-## 🚀 Roadmap al Producto Millonario
+## 🚀 Roadmap al Producto Millonario (Enterprise 2.4)
 
 1.  **Orquestación de APIs en Tiempo Real**: Conexión con Ecobici (GBFS) e incidentes tácticos.
 2.  **Black Box Sandoval API**: Servicio REST escalable con documentación Swagger/OpenAPI.
-3.  **Micro-Movilidad Adaptativa**: Algoritmos que detectan atajos peatonales que Waze y Google Maps ignoran.
+3.  **Micro-Movilidad Adaptativa**: Algoritmos de atajos peatonales de ultra-precisión.
 4.  **Security Dashboards**: Consola táctica zero-scroll para centros de monitoreo (C5/Empresa).
-5.  **Predictive Urban Planning**: Datos para que el gobierno sepa dónde faltan luminarias o ciclovías.
+5.  **Predictive Urban Planning**: Datos tácticos para la prevención del delito y movilidad urbana (B2G).
+6.  **ROI Institutions**: Modelo de retorno de inversión basado en reducción de riesgos (Caso UPIICSA).
+7.  **Smart Geo-fencing**: Alertas automáticas al entrar en zonas de alto estrés topológico.
+8.  **Brand Identity 3.0**: Interfaz profesional macOS-inspired sin emojis y con iconografía FontAwesome.
+9.  **High Availability Deployment**: Containerización con Docker para escalabilidad horizontal.
+10. **Design Sync**: Alineación total con prototipos de alta fidelidad (Figma Sync).
 
 ---
 
@@ -37,13 +42,16 @@ UrbanOS 2040 es la evolución de UrbanGraph hacia un ecosistema de grado guberna
 - **Docker Ops**: Escalabilidad total y despliegue continuo (CI/CD).
 - **Lyft GBFS**: Sincronización en tiempo real con la red de micro-movilidad.
 
----
+## 🛡️ API Reference (Enterprise Grade)
 
-## 🛡️ API Reference (Nivel Stripe/Google)
+La API de UrbanGraph está protegida bajo estándares industriales. Requiere una **Access Token** para su ejecución en entornos productivos.
 
-Consulte el portal de documentación integrado para desarrolladores:
 - **Swagger UI**: `http://localhost:8000/docs`
 - **ReDoc**: `http://localhost:8000/redoc`
+
+### Autenticación
+Incluir el header `access_token` en todas las peticiones:
+`access_token: SANDOVAL-ENGINE-PRO-2040`
 
 ### `POST /analyze`
 Envía tu misión y recibe el vector de integridad.
@@ -57,6 +65,12 @@ Envía tu misión y recibe el vector de integridad.
 ```
 
 ---
+
+## 🏛️ Propiedad Intelectual e Identidad de Marca
+
+- **Marca**: `URBANgraph` es una marca en proceso de registro.
+- **Algoritmo**: La `Fórmula Sandoval` está protegida como secreto industrial y derecho de autor de algoritmos. 
+- **Licencia**: Enterprise Sandoval Standard License (ESSL). Queda prohibida la redistribución o ingeniería inversa del motor de grafos.
 
 ## 🌍 Visión 2040
 "Mi propósito es poner la ingeniería al servicio de los demás, transformando la tecnología en un instrumento de seguridad y paz."
