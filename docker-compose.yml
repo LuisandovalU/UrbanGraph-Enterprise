@@ -1,33 +1,54 @@
+version: '3.9'
+
 services:
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: urbangraph_db
+    environment:
+      POSTGRES_DB: urbangraph
+      POSTGRES_USER: sandoval
+      POSTGRES_PASSWORD: enterprise_pro_2040
+    ports:
+      - "5432:5432"
+    restart: always
+
   api:
-    build: .
-    container_name: urbanos-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: urbangraph_api
     ports:
       - "8000:8000"
-    command: uvicorn api:app --host 0.0.0.0 --port 8000
-    restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
+    volumes:
+      - .:/app
     environment:
+      - DATABASE_URL=postgresql://sandoval:enterprise_pro_2040@db:5432/urbangraph
       - PYTHONUNBUFFERED=1
+      - APP_MODE=API
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
+    depends_on:
+      - db
+    restart: always
 
   webapp:
-    build: .
-    container_name: urbanos-console
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: urbangraph_webapp
     ports:
       - "8501:8501"
     volumes:
       - .:/app
+    environment:
+      - DATABASE_URL=postgresql://sandoval:enterprise_pro_2040@db:5432/urbangraph
+      - PYTHONUNBUFFERED=1
+      - APP_MODE=WEBAPP
+    command: streamlit run 5_app_web.py --server.port 8501 --server.address 0.0.0.0
     depends_on:
       - api
+      - db
     restart: always
-    command: streamlit run 5_app_web.py --server.port 8501 --server.address 0.0.0.0
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-    environment:
-      - PYTHONUNBUFFERED=1
+
+networks:
+  default:
+    name: urbangraph_network

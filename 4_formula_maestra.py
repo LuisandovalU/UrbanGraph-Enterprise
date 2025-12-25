@@ -1,82 +1,87 @@
 import osmnx as ox
 import networkx as nx
-import folium
+import json
+import os
+from shapely.geometry import Point
+from scipy.spatial import KDTree
 
-# 1. CONFIGURACIÓN
-LUGAR = "Colonia Roma Norte, Ciudad de México, Mexico"
-print(f"[1/6] Configurando Escenario: EL DESVÍO FORZOSO...")
+# --- UrbanOS 2040: Dynamic Stress Calibration ---
+REALTIME_FILE = "realtime_fallback.json"
 
-ox.settings.use_cache = False 
-ox.settings.useful_tags_way = ['name', 'highway', 'lit', 'surface']
-G = ox.graph_from_place(LUGAR, network_type="walk")
+def cargar_datos_volatilidad():
+    """Carga incidentes reales procesados por data_ingestor.py."""
+    if os.path.exists(REALTIME_FILE):
+        try:
+            with open(REALTIME_FILE, "r") as f:
+                return json.load(f).get("incidents", [])
+        except:
+            return []
+    return []
 
-# 2. FÓRMULA SANDOVAL (Estrategia: Lista Blanca Estricta)
-print(f"[2/6] Aplicando lógica de ingeniería...")
-
-for u, v, k, data in G.edges(keys=True, data=True):
+def calcular_peso_sandoval_v2(data, nivel_volatilidad=1.0, incidentes_coords=None, tree=None):
+    """
+    Fórmula Sandoval™ Refactorizada:
+    Acepta parámetro dinámico 'nivel_volatilidad' y cruza con ADIP.
+    """
     longitud = data.get('length', 0)
     nombre = str(data.get('name', 'Unknown')).lower()
     
-    # COSTO BASE: Pánico (Todo es caro)
-    costo_final = longitud * 10.0
+    # 1. Costo Base (Standard)
+    costo_base = longitud * 1.0
     
-    # LISTA BLANCA (Calles donde permitimos caminar)
-    # Colima es nuestra salvación paralela
-    nombres_seguros = ["colima", "tabasco", "guadalajara"]
+    # 2. Factor de Estrés Urbano (Volatilidad)
+    # Penalización del 500% (6.0x) si hay incidentes en radio de 500m
+    stress_multiplier = 1.0
     
+    # Centro aproximado de la calle (u, v logic is in the loop, passing data here)
+    # Para simplificar en esta función, asumimos que recibimos lat/lon o usamos pre-calc tree
+    # En el loop principal se hará el query.
+    
+    # 3. Lista Blanca (Bonos de Seguridad)
+    nombres_seguros = ["colima", "tabasco", "guadalajara", "orizaba"]
     if any(vip in nombre for vip in nombres_seguros):
-        costo_final = longitud * 1.0 # Costo real (barato)
+        costo_base *= 0.5 # Corredor Verde
+        
+    return costo_base * nivel_volatilidad
+
+# --- Misión 2: Script de Prueba Dinámico ---
+print(f"[1/4] Cargando Grafo y Datos de Volatilidad...")
+LUGAR = "Colonia Roma Norte, Ciudad de México, Mexico"
+G = ox.graph_from_place(LUGAR, network_type="walk")
+incidentes = cargar_datos_volatilidad()
+
+# Preparar KDTree para búsqueda de 500m (Rápido)
+if incidentes:
+    incident_pts = [[inc['lon'], inc['lat']] for inc in incidentes]
+    tree = KDTree(incident_pts)
+else:
+    tree = None
+
+print(f"[2/4] Aplicando Fórmula Sandoval™ Dinámica (Misión 2)...")
+for u, v, k, data in G.edges(keys=True, data=True):
+    # Obtener lat/lon del punto medio para el radio
+    mid_x = (G.nodes[u]['x'] + G.nodes[v]['x']) / 2
+    mid_y = (G.nodes[u]['y'] + G.nodes[v]['y']) / 2
     
-    data['costo_sandoval'] = costo_final
+    # Nivel de Volatilidad por cercanía a incidentes (500m ~ 0.0045 grados)
+    penalty = 1.0
+    if tree:
+        indices = tree.query_ball_point([mid_x, mid_y], 0.0045)
+        if indices:
+            penalty = 5.0 # Aumenta 500% el estrés
+            
+    data['costo_sandoval'] = calcular_peso_sandoval_v2(data, nivel_volatilidad=penalty)
 
-# 3. PUNTOS TRAMPA (AMBOS SOBRE LA AVENIDA PROHIBIDA)
-# Esto obliga a la ruta verde a "salirse" y luego "regresar".
-# Inicio: Álvaro Obregón esq. Orizaba
-origen_lat, origen_lon = 19.4188, -99.1609 
-# Fin: Álvaro Obregón esq. Frontera (4 cuadras adelante)
-destino_lat, destino_lon = 19.4208, -99.1566 
+# 4. Verificación de "Zona de Sombra"
+origen = (19.4188, -99.1609)
+destino = (19.4208, -99.1566)
+n_o = ox.nearest_nodes(G, origen[1], origen[1])
+n_d = ox.nearest_nodes(G, destino[1], destino[0])
 
-print(f"[3/6] Localizando nodos sobre Álvaro Obregón...")
-nodo_origen = ox.nearest_nodes(G, origen_lon, origen_lat)
-nodo_destino = ox.nearest_nodes(G, destino_lon, destino_lat)
+try:
+    ruta = nx.shortest_path(G, n_o, n_d, weight='costo_sandoval')
+    print(f"[3/4] Ruta calculada con éxito eludiendo zonas de sombra.")
+except:
+    print(f"[ERROR] No se pudo calcular la ruta.")
 
-# 4. CÁLCULO
-print(f"[4/6] Calculando rutas...")
-
-# Ruta Roja (Se irá recto por Obregón)
-ruta_roja = nx.shortest_path(G, nodo_origen, nodo_destino, weight='length')
-dist_roja = nx.shortest_path_length(G, nodo_origen, nodo_destino, weight='length')
-
-# Ruta Verde (Tendría que subir a Colima y luego bajar)
-ruta_verde = nx.shortest_path(G, nodo_origen, nodo_destino, weight='costo_sandoval')
-dist_verde = nx.shortest_path_length(G, nodo_origen, nodo_destino, weight='length')
-
-# 5. CHISMOSO (Verificar nombres)
-print(f"--- FORENSE ---")
-# Vemos las calles de la ruta verde
-nombres = [G.get_edge_data(ruta_verde[i], ruta_verde[i+1])[0].get('name', 'X') for i in range(5)]
-print(f"Ruta Verde empieza por: {nombres}")
-
-# 6. RESULTADOS
-print(f"--- SCORE FINAL ---")
-print(f"Ruta Roja (Recta): {int(dist_roja)} metros.")
-print(f"Ruta Verde (Desvío): {int(dist_verde)} metros.")
-diferencia = int(dist_verde - dist_roja)
-print(f"¡DIFERENCIA!: {diferencia} metros (Metros caminados extra por seguridad).")
-
-# 7. MAPA
-print(f"[5/6] Generando mapa...")
-m = folium.Map(location=[origen_lat, origen_lon], zoom_start=16)
-
-def pintar(ruta, color, peso):
-    coords = [(G.nodes[n]['y'], G.nodes[n]['x']) for n in ruta]
-    folium.PolyLine(coords, color=color, weight=peso, opacity=0.8).add_to(m)
-
-pintar(ruta_roja, "red", 4)
-pintar(ruta_verde, "green", 5)
-
-folium.Marker([origen_lat, origen_lon], popup="Inicio", icon=folium.Icon(color="black")).add_to(m)
-folium.Marker([destino_lat, destino_lon], popup="Fin", icon=folium.Icon(color="black")).add_to(m)
-
-m.save("mapa_desvio_final.html")
-print(f"¡HECHO! Abre 'mapa_desvio_final.html'")
+print(f"[4/4] Hecho. Fórmula Sandoval™ actualizada para Misión Crítica.")

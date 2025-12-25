@@ -9,6 +9,8 @@ import engine
 # Logger is handled via logging module if needed
 import random
 import time
+import plotly.graph_objects as go
+
 
 # --- 1. CONFIGURACIÓN DE PÁGINA ---
 def cargar_configuracion():
@@ -83,6 +85,11 @@ st.markdown("""
     .sidebar-content { 
         background-color: #FFFFFF;
     }
+
+    /* Pantalla de Estrés Reactiva */
+    [data-testid="stSidebar"].stress-low { border-right: 4px solid #10B981 !important; }
+    [data-testid="stSidebar"].stress-moderate { border-right: 4px solid #F59E0B !important; }
+    [data-testid="stSidebar"].stress-critical { border-right: 4px solid #EF4444 !important; }
 
     .header-container { 
         padding-bottom: 12px;
@@ -233,8 +240,44 @@ def obtener_analisis_tactico(hurry_factor, c_orig, c_dest, incidentes, realtime_
             except Exception as e:
                 analisis[f"{key}_dist"] = 0
                 analisis[f"{key}_time"] = 0
+    
+    # Misión 9: Integridad y Estrés Urbano
+    try:
+        if analisis.get("relampago"):
+            # Convertimos IDs de nodos a coordenadas para la evaluación de integridad
+            ruta_coords = [(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["relampago"]]
+            integridad = engine.evaluar_integridad_ruta(ruta_coords, G=G)
+            analisis["integridad"] = integridad
+    except Exception as e:
+        st.error(f"Error en evaluación de integridad: {e}")
                 
     return analisis
+
+def render_gauge_chart(score, level):
+    """Crea un gráfico de velocímetro usando Plotly Go."""
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number",
+        value = score,
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        title = {'text': f"Estrés Urbano: {level}", 'font': {'size': 14}},
+        gauge = {
+            'axis': {'range': [None, 100], 'tickwidth': 1, 'tickcolor': "#94A3B8"},
+            'bar': {'color': "#0F172A"},
+            'bgcolor': "white",
+            'borderwidth': 2,
+            'bordercolor': "#F1F5F9",
+            'steps': [
+                {'range': [0, 30], 'color': '#10B981'},
+                {'range': [30, 70], 'color': '#F59E0B'},
+                {'range': [70, 100], 'color': '#EF4444'}],
+            'threshold': {
+                'line': {'color': "black", 'width': 4},
+                'thickness': 0.75,
+                'value': score}}))
+    
+    fig.update_layout(height=200, margin=dict(l=10, r=10, t=40, b=10), font={'family': "Inter"})
+    return fig
+
 
 def render_b2g_analysis(incidentes):
     """Renderiza el análisis de planeación urbana para autoridades (B2G).
@@ -301,6 +344,25 @@ with col_side:
         Motor de Inteligencia Espacial optimizado para la gestión de riesgos y movilidad urbana.
     </div>
     ''', unsafe_allow_html=True)
+
+    # UI Reactiva Misión 9
+    stress_class = "stress-low"
+    if analisis and "integridad" in analisis:
+        level = analisis["integridad"].get("urban_stress_level", "LOW")
+        if level == "MODERATE": stress_class = "stress-moderate"
+        elif level in ["CRITICAL", "SHADOW_ZONE"]: stress_class = "stress-critical"
+    
+    # Inyectar clase reactiva vía JS (Hack Streamlit para CSS dinámico en Sidebar)
+    st.markdown(f'<script>window.parent.document.querySelector(\'[data-testid="stSidebar"]\').className += " {stress_class}";</script>', unsafe_allow_html=True)
+
+    if analisis and "integridad" in analisis:
+        st.plotly_chart(render_gauge_chart(analisis["integridad"]["urban_stress_percentage"], analisis["integridad"]["urban_stress_level"]), use_container_width=True)
+        
+        status_msg = "✅ Corredor Seguro Confirmado"
+        if stress_class != "stress-low":
+            status_msg = "⚠️ Riesgo de Zona de Sombra detectado"
+        st.markdown(f'<div style="text-align:center; font-weight:700; font-size:0.7rem; color:{"#10B981" if stress_class=="stress-low" else "#EF4444"};">{status_msg}</div>', unsafe_allow_html=True)
+
     
     opciones = list(COORDENADAS_FIJAS.keys()) + ["-- Manual --"]
     

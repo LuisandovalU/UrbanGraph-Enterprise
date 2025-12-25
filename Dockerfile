@@ -1,34 +1,37 @@
-# Usar una imagen base de Python ligera
-FROM python:3.11-slim
+# --- URBANgraph Enterprise Multi-stage Build ---
+# Stage 1: Dependency Builder
+FROM python:3.9-slim as builder
 
-# Evitar que Python genere archivos .pyc y habilitar salida en tiempo real
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Instalar dependencias del sistema para OSMnx y GDAL
-RUN apt-get update && apt-get install -y \
+WORKDIR /build
+COPY requirements.txt .
+# Install build dependencies for spatial libs if needed
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgdal-dev \
-    libproj-dev \
     g++ \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    libpq-dev \
+    && pip install --user --no-cache-dir -r requirements.txt
 
-# Establecer el directorio de trabajo
+
+# Stage 2: Production Runtime
+FROM python:3.9-slim
+
 WORKDIR /app
 
-# Copiar el archivo de dependencias
-COPY requirements.txt .
+# Copy installed packages from builder
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
 
-# Instalar dependencias de Python
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copiar el resto del código
+# Copy application code
 COPY . .
 
-# Exponer los puertos (8000 para API, 8501 para Streamlit)
+# Environments for performance
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Ports: API (8000), WebApp (8501)
 EXPOSE 8000
 EXPOSE 8501
 
-# El comando por defecto se sobreescribirá en docker-compose
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command is overridden by docker-compose for each service
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]

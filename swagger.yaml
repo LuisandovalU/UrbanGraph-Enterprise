@@ -1,0 +1,86 @@
+openapi: 3.0.3
+info:
+  title: URBANgraph Enterprise API
+  description: >
+    API de Integridad Logística de Misión Crítica. Provee análisis de riesgo topológico 
+    y 'Vectores de Integridad' utilizando datos en tiempo real de infraestructura gubernamental (C5/ADIP).
+  version: 1.2.0
+  contact:
+    name: Luis Sandoval
+    url: https://github.com/LuisandovalU/UrbanGraph-Enterprise
+servers:
+  - url: https://api.urbangraph.com/v1
+    description: Servidor de Producción (High Availability)
+
+paths:
+  /integrity_check:
+    post:
+      summary: Evaluar Vector de Integridad de Ruta
+      description: >
+        Analiza una ruta propuesta calculando su 'Estrés Urbano' mediante la Fórmula Sandoval™. 
+        Detecta zonas de sombra y cruza datos de incidentes en tiempo real (radio 500m).
+      tags:
+        - Risk Analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - route_points
+              properties:
+                route_points:
+                  type: array
+                  description: Lista de coordenadas [lat, lon] que componen la ruta planeada.
+                  items:
+                    type: array
+                    items:
+                      type: number
+                    minItems: 2
+                    maxItems: 2
+                cargo_value_tier:
+                  type: string
+                  enum: [STANDARD, HIGH_VALUE, HAZMAT]
+                  description: Define la sensibilidad del algoritmo al riesgo.
+      responses:
+        '200':
+          description: Análisis de Integridad Completado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  integrity_score:
+                    type: number
+                    format: float
+                    description: >
+                      Puntaje de 0.0 a 100.0. (100 = Ruta Segura / 'Corredor Seguro'). 
+                      Valores bajos indican alta probabilidad de siniestro.
+                  urban_stress_level:
+                    type: string
+                    enum: [LOW, MODERATE, CRITICAL, SHADOW_ZONE]
+                    description: Clasificación cualitativa del riesgo según la volatilidad actual.
+                  detected_threats:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          example: "C5_INCIDENT_REPORT"
+                        location:
+                          type: array
+                          items: 
+                            type: number
+                        description: 
+                          type: string
+                          example: "Reporte activo de robo a transporte en radio de 500m."
+                  alternative_safe_route:
+                    type: boolean
+                    description: Indica si el motor encontró una ruta topológicamente más segura.
+                  insurance_risk_factor:
+                    type: number
+                    description: Multiplicador sugerido para el cálculo de prima de seguro dinámica.
+        '403':
+          description: Unauthorized - Requiere Licencia Tier 2 Enterprise
