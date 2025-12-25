@@ -355,8 +355,13 @@ with col_side:
     # Inyectar clase reactiva vía JS (Hack Streamlit para CSS dinámico en Sidebar)
     st.markdown(f'<script>window.parent.document.querySelector(\'[data-testid="stSidebar"]\').className += " {stress_class}";</script>', unsafe_allow_html=True)
 
-    if analisis and "integridad" in analisis:
-        st.plotly_chart(render_gauge_chart(analisis["integridad"]["urban_stress_percentage"], analisis["integridad"]["urban_stress_level"]), use_container_width=True)
+    # Obtenemos los datos con seguridad, si no existen ponemos 0 o 'NORMAL'
+    datos_integridad = (analisis or {}).get("integridad", {})
+    stress_val = datos_integridad.get("urban_stress_percentage", 0)
+    stress_lvl = datos_integridad.get("urban_stress_level", "NORMAL")
+    
+    # Ahora renderizamos el gráfico con las variables seguras
+    st.plotly_chart(render_gauge_chart(stress_val, stress_lvl), use_container_width=True)
         
         status_msg = "✅ Corredor Seguro Confirmado"
         if stress_class != "stress-low":
