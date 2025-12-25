@@ -9,3 +9,5 @@ plotly
 psycopg2-binary
 python-dotenv
 httpx
+pyogrio
+rtree
