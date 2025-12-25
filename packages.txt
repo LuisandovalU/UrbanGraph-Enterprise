@@ -4,3 +4,5 @@ libproj-dev
 proj-bin
 libgeos-dev
 libspatialindex-dev
+build-essential
+python3-dev

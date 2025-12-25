@@ -11,3 +11,6 @@ python-dotenv
 httpx
 pyogrio
 rtree
+fiona
+shapely
+pyproj
