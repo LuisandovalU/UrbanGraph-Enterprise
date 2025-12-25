@@ -363,10 +363,10 @@ with col_side:
     # Ahora renderizamos el gráfico con las variables seguras
     st.plotly_chart(render_gauge_chart(stress_val, stress_lvl), use_container_width=True)
         
-        status_msg = "✅ Corredor Seguro Confirmado"
-        if stress_class != "stress-low":
-            status_msg = "⚠️ Riesgo de Zona de Sombra detectado"
-        st.markdown(f'<div style="text-align:center; font-weight:700; font-size:0.7rem; color:{"#10B981" if stress_class=="stress-low" else "#EF4444"};">{status_msg}</div>', unsafe_allow_html=True)
+    status_msg = "✅ Corredor Seguro Confirmado"
+    if stress_class != "stress-low":
+        status_msg = "⚠️ Riesgo de Zona de Sombra detectado"
+    st.markdown(f'<div style="text-align:center; font-weight:700; font-size:0.7rem; color:{"#10B981" if stress_class=="stress-low" else "#EF4444"};">{status_msg}</div>', unsafe_allow_html=True)
 
     
     opciones = list(COORDENADAS_FIJAS.keys()) + ["-- Manual --"]
