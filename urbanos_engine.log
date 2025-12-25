@@ -152,3 +152,49 @@ tornado.websocket.WebSocketClosedError
 2025-12-25 16:06:35,762 [INFO] HTTP Request: POST http://testserver/api/v1/analyze "HTTP/1.1 200 OK"
 2025-12-25 16:11:24,172 [INFO] MISSION INITIATED: From EXT-QUAD to EXT-QUAD [Enterprise Mode]
 2025-12-25 16:11:24,613 [INFO] MISSION INITIATED: From EXT-QUAD to EXT-QUAD [Enterprise Mode]
+2025-12-25 16:39:44,243 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:39:45,108 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:39:55,363 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Enterprise Mode]
+2025-12-25 16:39:56,753 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:39:57,434 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:43:56,376 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Enterprise Mode]
+2025-12-25 16:43:57,865 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:43:58,584 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:45:30,760 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:45:31,478 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:45:31,992 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q43 [Enterprise Mode]
+2025-12-25 16:45:33,170 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:45:33,991 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:45:34,397 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q21 [Enterprise Mode]
+2025-12-25 16:45:35,476 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:45:36,237 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:45:58,781 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q21 [Enterprise Mode]
+2025-12-25 16:45:59,962 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q21 [Enterprise Mode]
+2025-12-25 16:46:00,001 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:46:00,746 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:46:00,863 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:46:01,682 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:46:02,440 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q01 [Enterprise Mode]
+2025-12-25 16:46:03,666 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:46:04,396 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:46:26,755 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q01 [Enterprise Mode]
+2025-12-25 16:46:28,097 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q01 [Enterprise Mode]
+2025-12-25 16:46:28,328 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:46:28,908 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:46:29,110 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:46:29,597 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:46:30,034 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q20 [Enterprise Mode]
+2025-12-25 16:46:31,188 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:46:31,873 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:48:11,898 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q20 [Enterprise Mode]
+2025-12-25 16:48:13,194 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:48:13,870 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:48:14,643 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q20 [Enterprise Mode]
+2025-12-25 16:48:15,776 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q20 [Enterprise Mode]
+2025-12-25 16:48:16,061 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:48:16,634 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:48:17,050 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:48:17,475 [INFO] Sync Audit: C5 Incidents ingested successfully.
+2025-12-25 16:48:17,885 [INFO] MISSION INITIATED: From BJ-Q11 to BJ-Q20 [Enterprise Mode]
+2025-12-25 16:48:19,043 [INFO] Sync Audit: Ecobici data consumed successfully.
+2025-12-25 16:48:19,727 [INFO] Sync Audit: C5 Incidents ingested successfully.

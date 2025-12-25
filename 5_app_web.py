@@ -494,3 +494,14 @@ with col_main:
     st.markdown(f'''
     <div class="status-footer" style="display:none;">
     ''', unsafe_allow_html=True)
+
+    # 4. Status Footer
+    st.markdown(f'''
+    <div class="status-footer">
+        <div><span class="status-dot"></span> API ONLINE 2.6.0</div>
+        <div>UrbanGraph Tactical</div>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
