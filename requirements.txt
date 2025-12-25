@@ -59,3 +59,4 @@ psycopg2-binary==2.9.9
 geoalchemy2==0.14.1
 python-dotenv==1.0.0
 plotly==5.18.0
+streamlit-folium==0.24.1

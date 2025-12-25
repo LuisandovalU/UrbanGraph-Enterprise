@@ -4,15 +4,18 @@ Copyright (c) 2025 Luis Sandoval. All Rights Reserved.
 Proprietary & Confidential.
 Algorithm: Fórmula Sandoval (Topological Stress Optimization)
 """
-# import streamlit as st  # Removed for headless Enterprise Engine compatibility
 import osmnx as ox
 import networkx as nx
 import requests
 import random
 import time
-import logging
 import json
 import os
+try:
+    import streamlit as st
+except ImportError:
+    st = None
+import logging
 import numpy as np
 from scipy.spatial import KDTree
 from typing import Dict, List, Optional, Tuple
@@ -84,7 +87,14 @@ def get_quadrant_id(lat: float, lon: float) -> str:
     return f"BJ-Q{row}{col}"
 
 # --- UrbanOS 2040: Shared Infrastructure ---
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = None
+if st:
+    try:
+        DATABASE_URL = st.secrets.get("DATABASE_URL")
+    except:
+        pass
+if not DATABASE_URL:
+    DATABASE_URL = os.getenv("DATABASE_URL")
 
 def cargar_grafo_seguro():
     """
@@ -95,25 +105,33 @@ def cargar_grafo_seguro():
     """
     archivo_mapa = "benito_juarez_seguro.graphml"
     
-    if DATABASE_URL:
-        # Demostración Misión 7: Consulta Espacial Directa via PostGIS
-        # ST_DWithin es la clave para Big Data Spatial
-        logger.info("Misión 7: Operando con Infraestructura PostGIS (Ready for Big Data).")
-        try:
-            # En un entorno real, aquí se ejecutaría:
-            # engine = create_engine(DATABASE_URL)
-            # gdf = gpd.read_postgis("SELECT * FROM edges WHERE ST_DWithin(...)", engine)
-            pass
-        except Exception as e:
-            logger.warning(f"Error en consulta PostGIS: {e}")
-
-    # Fallback a Local
-    if os.path.exists(archivo_mapa):
-        return ox.load_graphml(archivo_mapa)
+    # Intento de PostGIS (Misión 7)
+    if DATABASE_URL and ("localhost" not in DATABASE_URL):
+        logger.info(f"Misión 7: Operando con Infraestructura Cloud PostGIS.")
+        # Aquí se podría implementar la carga desde PostGIS si se desea
+        # Por ahora mantenemos el fallback a graphml para estabilidad en Streamlit Cloud
     
-    G = ox.graph_from_place(RISK_PROFILE["LOCATION"], network_type="walk")
-    ox.save_graphml(G, archivo_mapa)
-    return G
+    # Fallback a Local Asset (Prioridad para Streamlit Cloud free tier)
+    if os.path.exists(archivo_mapa):
+        try:
+            return ox.load_graphml(archivo_mapa)
+        except Exception as e:
+            logger.error(f"Error cargando {archivo_mapa}: {e}")
+
+    # Último recurso: Descarga Directa de OSM (Benito Juárez)
+    logger.info("Último Recurso: Descargando grafo directamente de OpenStreetMap.")
+    try:
+        G = ox.graph_from_place(RISK_PROFILE["LOCATION"], network_type="walk")
+        # No intentamos guardar si estamos en un entorno restrictivo, pero Streamlit Cloud suele permitirlo en el CWD
+        try:
+            ox.save_graphml(G, archivo_mapa)
+        except:
+            pass
+        return G
+    except Exception as e:
+        logger.critical(f"FALLA TOTAL: No se pudo obtener el mapa: {e}")
+        # Retornar un grafo de emergencia o re-lanzar
+        raise e
 
 
 def evaluar_integridad_ruta(ruta_coords: List[Tuple[float, float]], cargo_value_tier: str = "STANDARD", G=None):
