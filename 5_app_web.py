@@ -47,157 +47,227 @@ def get_base64_image_cached(image_path):
 # --- 3. CSS (SENIOR FULLSTACK REFACTOR - MacBook Air M4 Optimized) ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    
-    /* Configuración Global de Fuente Look Apple */
+    /* --- 1. CONFIGURACIÓN GLOBAL (Look Apple Minimalist) --- */
+    :root {
+        --bg-white: #FFFFFF;
+        --text-primary: #000000;
+        --text-secondary: #666666;
+        --border-color: #E5E5E5;
+        --accent-red: #FF3B30;
+        --accent-green: #34C759;
+        --metro-orange: #FF9500;
+        --metro-red: #FF3B30;
+        --metro-blue: #007AFF;
+        --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.04);
+        --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.08);
+        --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
     html, body, [data-testid="stAppViewContainer"], .stApp {
-        font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif !important;
-        background-color: #FFFFFF;
+        font-family: var(--font-stack) !important;
+        background-color: var(--bg-white);
+        color: var(--text-primary);
     }
 
     /* Eliminar Espaciado Lateral Streamlit */
     .block-container {
-        padding-top: 0rem !important;
-        padding-bottom: 0rem !important;
-        padding-left: 0rem !important;
-        padding-right: 0rem !important;
+        padding: 0rem !important;
         max-width: 100% !important;
     }
 
     /* Ocultar Menú y Footer */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    [data-testid="stHeader"] {display: none;}
+    #MainMenu, footer, header, [data-testid="stHeader"] { visibility: hidden; display: none; }
 
     /* Sidebar Minimalista */
     [data-testid="stSidebar"] {
-        background-color: #FFFFFF !important;
-        border-right: 1px solid #F1F5F9 !important;
-        box-shadow: none !important;
+        background-color: var(--bg-white) !important;
+        border-right: 1px solid var(--border-color) !important;
         min-width: 320px !important;
+        padding-top: 0 !important;
     }
     
     [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
-        padding: 1.5rem 1rem !important;
+        padding: 2.5rem 1.5rem !important;
+        gap: 0.5rem !important;
     }
 
-    .sidebar-content { 
-        background-color: #FFFFFF;
+    /* Branding */
+    .brand-logo {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        margin-bottom: 24px;
+        color: var(--text-primary);
+        user-select: none;
+    }
+    .brand-logo span {
+        font-weight: 300;
+    }
+    .brand-subtitle-new {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-secondary);
+        margin-bottom: 32px;
+        font-weight: 600;
     }
 
-    /* Pantalla de Estrés Reactiva */
-    [data-testid="stSidebar"].stress-low { border-right: 4px solid #10B981 !important; }
-    [data-testid="stSidebar"].stress-moderate { border-right: 4px solid #F59E0B !important; }
-    [data-testid="stSidebar"].stress-critical { border-right: 4px solid #EF4444 !important; }
+    /* Sliders & Labels */
+    .section-title {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-secondary);
+        margin-top: 24px;
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
 
-    .header-container { 
-        padding-bottom: 12px;
-        margin-bottom: 16px;
-        border-bottom: 1px solid #F8FAFC;
-    }
-    .brand-title { 
-        font-size: 1.8rem !important; 
-        font-weight: 800 !important; 
-        color: #000 !important; 
-        line-height: 1 !important; 
-        margin: 0 !important; 
-        letter-spacing: -1.5px !important;
-        font-family: 'Inter', sans-serif !important;
-        display: block !important;
-    }
-    .brand-title b { 
-        font-weight: 880 !important; 
-        color: #000 !important; 
-        font-size: 2.1rem !important; 
-        display: block !important;
-    }
-    .brand-subtitle { font-size: 0.55rem; color: #94A3B8; font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.8px; }
-
-    /* Top Metrics Bar */
-    .metrics-bar {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        background: #FFFFFF;
-        padding: 8px 0;
-        border-bottom: 1px solid #F1F5F9;
-        height: 60px;
-    }
-    .metric-card {
-        text-align: center;
-        padding: 0 12px;
-        border-right: 1px solid #F1F5F9;
-        flex-grow: 1;
-    }
-    .metric-card:last-child { border-right: none; }
-    .metric-label { font-size: 0.55rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px; }
-    .metric-value { font-size: 1.2rem; font-weight: 800; color: #0F172A; }
-    .metric-value.blue { color: #0EA5E9; }
-    .metric-value.green { color: #10B981; }
-
-    /* UI Elements Refinement */
     .stSlider label, .stSelectbox label, .stTextInput label { 
-        font-size: 0.65rem !important; 
-        font-weight: 700 !important; 
-        color: #64748B !important; 
-        text-transform: uppercase; 
-        margin-bottom: 4px; 
-    }
-    
-    /* Botones Tácticos */
-    .stButton>button {
-        background-color: #EF4444 !important; /* Rojo Seguridad */
-        color: white !important;
-        border-radius: 4px !important; /* Esquinas casi rectas */
-        height: 42px !important;
-        font-weight: 700 !important;
-        font-size: 0.8rem !important;
-        letter-spacing: 0.5px !important;
-        border: none !important;
-        width: 100% !important;
-        transition: all 0.2s ease;
-    }
-    .stButton>button:hover {
-        background-color: #DC2626 !important;
-        transform: translateY(-1px);
+        font-size: 12px !important;
+        color: var(--text-secondary) !important;
+        font-weight: 400 !important;
+        text-transform: none !important;
     }
 
-    .legend-sidebar {
-        margin-top: 20px;
-        padding-top: 15px;
-        border-top: 1px solid #F1F5F9;
+    /* Result Card */
+    .result-card {
+        background: #F5F5F7;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 24px;
     }
-    .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.7rem; font-weight: 600; color: #64748B; }
-    .legend-icon { font-size: 0.8rem; width: 14px; text-align: center; }
-
-    .status-footer-fixed {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 320px; /* Ancho del sidebar */
+    .result-header {
+        font-size: 11px;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+    .metrics {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        background: #FFFFFF;
-        color: #94A3B8;
-        padding: 0 20px;
-        height: 32px;
-        font-size: 0.6rem;
+        align-items: flex-end;
+    }
+    .metric-main {
+        font-size: 32px;
         font-weight: 700;
-        text-transform: uppercase;
-        border-top: 1px solid #F1F5F9;
+        letter-spacing: -0.5px;
+        color: var(--text-primary);
+    }
+    .metric-unit {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--text-secondary);
+        margin-left: 4px;
+    }
+    .metric-secondary {
+        font-size: 14px;
+        color: var(--text-secondary);
+        text-align: right;
+    }
+
+    /* Botones */
+    .stButton>button {
+        width: 100% !important;
+        padding: 12px !important;
+        background: #000 !important;
+        color: #fff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        cursor: pointer !important;
+        transition: opacity 0.2s !important;
+    }
+    .stButton>button:hover {
+        opacity: 0.8 !important;
+        background: #000 !important;
+    }
+
+    /* Top Metrics Bar (Main Area) */
+    .metrics-bar {
+        position: absolute;
+        top: 24px;
+        left: 24px;
+        right: 24px;
+        display: flex;
+        gap: 16px;
+        z-index: 1000;
+        pointer-events: none;
+    }
+    .glass-metric {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        padding: 12px 20px;
+        border-radius: 12px;
+        box-shadow: var(--shadow-glass);
+        pointer-events: auto;
+    }
+
+    /* Leyenda Flotante */
+    .legend-widget {
+        position: fixed;
+        bottom: 32px;
+        right: 32px;
+        width: 240px;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: var(--shadow-glass);
         z-index: 1000;
     }
-    .status-dot { width: 6px; height: 6px; background: #10B981; border-radius: 50%; display: inline-block; margin-right: 5px; }
-    
+    .legend-title {
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: var(--text-primary);
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+        padding-bottom: 8px;
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        font-size: 12px;
+        color: #333;
+    }
+    .legend-color {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    /* Pulse Red Animation */
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(255, 59, 48, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
+    }
+    .marker-pulse-red {
+        background: var(--accent-red);
+        border-radius: 50%;
+        animation: pulse-red 2s infinite;
+        width: 12px;
+        height: 12px;
+        border: 2px solid white;
+    }
+
+    /* Quotes */
     .quote-box {
-        margin-top: 20px;
-        border-left: 2px solid #F1F5F9;
-        padding-left: 12px;
-        font-size: 0.65rem;
-        color: #94A3B8;
+        margin-top: 32px;
+        font-size: 11px;
+        color: var(--text-secondary);
         font-style: italic;
+        line-height: 1.5;
+        border-top: 1px solid var(--border-color);
+        padding-top: 16px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -335,59 +405,47 @@ col_side, col_main = st.columns([0.25, 0.75], gap="small")
 
 with col_side:
     st.markdown('''
-    <div class="header-container">
-        <h1 class="brand-title"><b>U</b>RBANgraph</h1>
-        <div class="brand-subtitle">Plataforma de Análisis Topológico | Ingeniería Mexicana</div>
-    </div>
-    
-    <div style="font-size: 0.65rem; color: #94A3B8; margin-top: -5px; line-height: 1.3; margin-bottom: 20px; font-weight: 500;">
-        Motor de Inteligencia Espacial optimizado para la gestión de riesgos y movilidad urbana.
-    </div>
+    <div class="brand-logo">URBAN<span>graph</span></div>
+    <div class="brand-subtitle-new">Plataforma de Análisis Topológico | Ingeniería Mexicana</div>
     ''', unsafe_allow_html=True)
 
-    # UI Reactiva Misión 9
-    stress_class = "stress-low"
-    if analisis and "integridad" in analisis:
-        level = analisis["integridad"].get("urban_stress_level", "LOW")
-        if level == "MODERATE": stress_class = "stress-moderate"
-        elif level in ["CRITICAL", "SHADOW_ZONE"]: stress_class = "stress-critical"
-    
-    # Inyectar clase reactiva vía JS (Hack Streamlit para CSS dinámico en Sidebar)
-    st.markdown(f'<script>window.parent.document.querySelector(\'[data-testid="stSidebar"]\').className += " {stress_class}";</script>', unsafe_allow_html=True)
-
-    # Obtenemos los datos con seguridad, si no existen ponemos 0 o 'NORMAL'
-    datos_integridad = (analisis or {}).get("integridad", {})
-    stress_val = datos_integridad.get("urban_stress_percentage", 0)
-    stress_lvl = datos_integridad.get("urban_stress_level", "NORMAL")
-    
-    # Ahora renderizamos el gráfico con las variables seguras
-    st.plotly_chart(render_gauge_chart(stress_val, stress_lvl), use_container_width=True)
-        
-    status_msg = "✅ Corredor Seguro Confirmado"
-    if stress_class != "stress-low":
-        status_msg = "⚠️ Riesgo de Zona de Sombra detectado"
-    st.markdown(f'<div style="text-align:center; font-weight:700; font-size:0.7rem; color:{"#10B981" if stress_class=="stress-low" else "#EF4444"};">{status_msg}</div>', unsafe_allow_html=True)
-
+    # 1. Inputs de Ruta
+    st.markdown('<div class="section-title">Planificación de Ruta</div>', unsafe_allow_html=True)
     
     opciones = list(COORDENADAS_FIJAS.keys()) + ["-- Manual --"]
-    
-    col_orig, col_dest = st.columns(2)
-    with col_orig:
-        sel_o = st.selectbox("Punto de Origen", opciones, index=0)
-    with col_dest:
-        sel_d = st.selectbox("Punto de Destino", opciones, index=1)
+    sel_o = st.selectbox("Punto de Inserción", opciones, index=0)
+    sel_d = st.selectbox("Objetivo", opciones, index=1)
         
-    dir_o = st.text_input("Ingresar Origen", "") if sel_o == "-- Manual --" else sel_o
-    dir_d = st.text_input("Ingresar Destino", "") if sel_d == "-- Manual --" else sel_d
+    dir_o = st.text_input("Ingresar Origen (Manual)", "") if sel_o == "-- Manual --" else sel_o
+    dir_d = st.text_input("Ingresar Destino (Manual)", "") if sel_d == "-- Manual --" else sel_d
     
-    st.markdown('<br>', unsafe_allow_html=True)
-    st.slider("Intensidad de Búsqueda", 0, 100, st.session_state.get("prisa", 50), key="prisa")
+    # 2. Sliders Fórmula Sandoval (Dual Linked Sliders)
+    st.markdown('<div class="section-title">Fórmula Sandoval</div>', unsafe_allow_html=True)
     
+    # Initialize session state for linked sliders
+    if "weight_time" not in st.session_state:
+        st.session_state.weight_time = 65
+        st.session_state.weight_dist = 35
+
+    def update_dist():
+        st.session_state.weight_dist = 100 - st.session_state.weight_time
+    def update_time():
+        st.session_state.weight_time = 100 - st.session_state.weight_dist
+
+    col_t, col_dst = st.columns(2)
+    with col_t:
+        w_time = st.slider("Peso Tiempo (%)", 0, 100, key="weight_time", on_change=update_dist)
+    with col_dst:
+        w_dist = st.slider("Peso Distancia (%)", 0, 100, key="weight_dist", on_change=update_time)
+
+    # El hurry_factor para el motor será el peso del tiempo (más peso tiempo = más prisa/menos seguridad)
+    st.session_state["prisa"] = w_time
+
     st.markdown('<br>', unsafe_allow_html=True)
-    if st.button("ANALIZAR RUTA PERSONALIZADA", type="primary", use_container_width=True):
+    if st.button("Actualizar Análisis", type="primary", use_container_width=True):
         with st.spinner("Sincronizando con UrbanOS..."):
             try:
-                # Geocoding con Fallback Maestro (WTC CDMX / Parque Hundido)
+                # Geocoding con Fallback Maestro
                 try:
                     c_o = COORDENADAS_FIJAS[dir_o]["coords"] if dir_o in COORDENADAS_FIJAS else engine.geocode_with_cache(f"{dir_o}, CDMX")
                     c_d = COORDENADAS_FIJAS[dir_d]["coords"] if dir_d in COORDENADAS_FIJAS else engine.geocode_with_cache(f"{dir_d}, CDMX")
@@ -400,108 +458,126 @@ with col_side:
                 st.session_state.update({"c_orig": c_o, "c_dest": c_d, "rutas_calculadas": True})
                 st.rerun()
             except Exception as e:
-                st.error(f"Falla en el motor: {str(e)}") # Muestra el error real para debugging
+                st.error(f"Falla en el motor: {str(e)}")
 
-    st.markdown('<br>', unsafe_allow_html=True)
-    st.markdown('''
-    <div class="legend-sidebar" style="margin-top: 0px; border-top: none;">
-        <div class="legend-item"><i class="fa fa-exclamation-triangle legend-icon" style="color:#EF4444"></i> Riesgo C5 (Fatal)</div>
-        <div class="legend-item"><div class="legend-icon" style="color:#10B981">●</div> Ruta Escudo (Segura)</div>
-        <div class="legend-item"><div class="legend-icon" style="color:#EF4444">●</div> Ruta Relámpago (Veloz)</div>
-        <div class="legend-item"><div class="legend-icon" style="color:orange">●</div> Estación Metro</div>
-        <div class="legend-item"><i class="fa fa-bicycle legend-icon" style="color:#F59E0B"></i> Red Ecobici</div>
-    </div>
-    ''', unsafe_allow_html=True)
+    # 3. Resultados (Result Card format)
+    if st.session_state["rutas_calculadas"]:
+        t_relajado = int(analisis.get("relampago_time", 0))
+        distancia = int(analisis.get("relampago_dist", 0) or analisis.get("directa_dist", 0))
+        eficiencia = 100 - int(analisis.get("integridad", {}).get("urban_stress_percentage", 0))
+        
+        st.markdown(f'''
+        <div class="result-card">
+            <div class="result-header">Análisis de Ruta Óptima</div>
+            <div class="metrics">
+                <div>
+                    <span class="metric-main">{t_relajado}</span>
+                    <span class="metric-unit">min</span>
+                </div>
+                <div class="metric-secondary">
+                    {distancia} m<br>
+                    Eficiencia: {eficiencia}%
+                </div>
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
 
     st.markdown('''
         <div class="quote-box">
-            Soli Deo Gloria. Ingeniería al servicio del prójimo. Que el sistema sea limpio y funcional.
+            Soli Deo Gloria. Ingeniería al servicio del prójimo. <br>
+            Optimizado para Benito Juárez, CDMX.
         </div>
     ''', unsafe_allow_html=True)
-    
-    # Persistent Fixed Footer
-    st.markdown(f'''
-    <div class="status-footer-fixed">
-        <div><span class="status-dot"></span> API ONLINE 2.6.0</div>
-        <div>UrbanGraph Tactical</div>
-    </div>
-    ''', unsafe_allow_html=True)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
 
 with col_main:
     # Top bar is handled within col_main
     pass
 
 with col_main:
-    # 1. Top Metrics Bar - Pure Sans (No Emojis)
-    t_relajado = int(analisis.get("directa_time", 0))
-    m_ganados = int(analisis.get("directa_time", 0) - analisis.get("relampago_time", 0)) if analisis.get("relampago") else 0
-    distancia = int(analisis.get("relampago_dist", 0) or analisis.get("directa_dist", 0))
+    # 1. Floating Top Metrics Bar (Glassmorphism)
+    if st.session_state["rutas_calculadas"]:
+        t_relajado = int(analisis.get("directa_time", 0))
+        m_ganados = int(analisis.get("directa_time", 0) - analisis.get("relampago_time", 0)) if analisis.get("relampago") else 0
+        distancia = int(analisis.get("relampago_dist", 0) or analisis.get("directa_dist", 0))
+        
+        st.markdown(f'''
+        <div class="metrics-bar">
+            <div class="glass-metric">
+                <span style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase;">Tiempo Relajado</span><br>
+                <b style="font-size: 18px;">{t_relajado} min</b>
+            </div>
+            <div class="glass-metric">
+                <span style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase;">Ahorro Potencial</span><br>
+                <b style="font-size: 18px; color: var(--accent-green);">+{m_ganados} min</b>
+            </div>
+            <div class="glass-metric">
+                <span style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase;">Distancia</span><br>
+                <b style="font-size: 18px;">{distancia} m</b>
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
     
-    st.markdown(f'''
-    <div class="metrics-bar">
-        <div class="metric-card">
-            <div class="metric-label">Tiempo Relajado</div>
-            <div class="metric-value blue">{t_relajado} min</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">Minutos Ganados</div>
-            <div class="metric-value green">+{m_ganados}</div>
-        </div>
-        <div class="metric-card">
-            <div class="metric-label">Distancia Total</div>
-            <div class="metric-value">{distancia}m</div>
-        </div>
-    </div>
-    ''', unsafe_allow_html=True)
-    
-    # 2. Map Area (Fixed Height 700px)
+    # 2. Map Area (Fixed Height 100vh)
     if not st.session_state["rutas_calculadas"]:
-        st.markdown('<div class="map-container" style="display:flex; align-items:center; justify-content:center; background:#FFFFFF; height: 700px; border-radius: 8px; border: 1px solid #F8FAFC;"><h2 style="color:#E2E8F0; font-weight:200;">Parámetros de misión requeridos</h2></div>', unsafe_allow_html=True)
+        st.markdown('<div style="display:flex; align-items:center; justify-content:center; background:#F8FAFC; height: 100vh; color:#CBD5E1;"><h2>Defina parámetros de misión para activar cartografía</h2></div>', unsafe_allow_html=True)
     else:
         try:
-            G = obtener_grafo_optimizado()
-            m = folium.Map(tiles='CartoDB Positron', attr='UrbanGraph', zoom_start=14)
+            m = folium.Map(tiles='CartoDB Positron', attr='UrbanGraph', zoom_start=14, zoom_control=False)
             
             # Draw Paths
             if analisis.get("directa"):
-                folium.PolyLine([(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["directa"]], color='#475569', weight=3, opacity=0.2).add_to(m)
+                folium.PolyLine([(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["directa"]], color='#000000', weight=2, opacity=0.3, dash_array='5, 5').add_to(m)
             if analisis.get("escudo"):
-                folium.PolyLine([(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["escudo"]], color='#10B981', weight=5, opacity=0.5).add_to(m)
+                folium.PolyLine([(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["escudo"]], color='#34C759', weight=4, opacity=0.6).add_to(m)
             if analisis.get("relampago"):
-                folium.PolyLine([(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["relampago"]], color='#EF4444', weight=6, opacity=0.8).add_to(m)
+                folium.PolyLine([(G.nodes[n]['y'], G.nodes[n]['x']) for n in analisis["relampago"]], color='#000000', weight=4, opacity=0.9).add_to(m)
 
-            # Markers (FontAwesome Professionals)
+            # Custom Marker Icons (SVG)
+            def get_svg_icon(type, color):
+                if type == 'metro':
+                    svg = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/></svg>'
+                elif type == 'c5':
+                    svg = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+                else: 
+                    svg = ''
+                
+                style = f"background:{color}; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 6px rgba(0,0,0,0.2);"
+                if type == 'c5':
+                    style += " animation: pulse-red 2s infinite;"
+                
+                return f'<div style="{style}">{svg}</div>'
+
+            # Markers
             incidents_to_render = st.session_state["incidentes"] + realtime_data.get("incidents", [])
             for inc in incidents_to_render:
-                folium.Marker([inc["lat"], inc["lon"]], 
-                              icon=folium.Icon(color=inc["color"], icon='exclamation-triangle', prefix='fa'), 
-                              tooltip=inc['tipo']).add_to(m)
+                icon_html = get_svg_icon('c5', 'var(--accent-red)')
+                folium.Marker([inc["lat"], inc["lon"]], icon=folium.DivIcon(html=icon_html, icon_size=(24,24)), tooltip=inc['tipo']).add_to(m)
             
             for stn in transporte:
-                folium.CircleMarker([stn['lat'], stn['lon']], radius=2, color=stn['color'], fill=True).add_to(m)
+                color = 'var(--metro-orange)' if stn['tipo'] == 'Metro' else 'var(--metro-red)'
+                icon_html = get_svg_icon('metro', color)
+                folium.Marker([stn['lat'], stn['lon']], icon=folium.DivIcon(html=icon_html, icon_size=(20,20)), tooltip=stn['name']).add_to(m)
 
-            folium.Marker(st.session_state["c_orig"], icon=folium.Icon(color='green', icon='play', prefix='fa'), tooltip="Origen").add_to(m)
-            folium.Marker(st.session_state["c_dest"], icon=folium.Icon(color='red', icon='flag-checkered', prefix='fa'), tooltip="Destino").add_to(m)
+            m.fit_bounds([st.session_state["c_orig"], st.session_state["c_dest"]], padding=(50, 50))
+            st_folium(m, width="100%", height=900, returned_objects=[])
 
-            m.fit_bounds([st.session_state["c_orig"], st.session_state["c_dest"]], padding=(30, 30))
-            st_folium(m, width=None, height=700, returned_objects=[])
+            # Leyenda Táctica Flotante
+            st.markdown('''
+            <div class="legend-widget">
+                <div class="legend-title">Leyenda Táctica</div>
+                <div class="legend-item"><div class="legend-color" style="background: var(--metro-orange);"></div><span>Metro (L1, L3, L9)</span></div>
+                <div class="legend-item"><div class="legend-color" style="background: var(--metro-red);"></div><span>Metrobús</span></div>
+                <div class="legend-item"><div class="legend-color" style="background: var(--accent-green);"></div><span>Ruta Escudo</span></div>
+                <div class="legend-item"><div class="legend-color" style="background: #000;"></div><span>Ruta Relámpago</span></div>
+                <div class="legend-item"><div class="marker-pulse-red" style="margin-right:10px;"></div><span>Incidente C5 Activo</span></div>
+            </div>
+            ''', unsafe_allow_html=True)
+            
         except Exception as e:
             st.error(f"Render Error: {e}")
 
-    # 3. Status Footer
-    st.markdown(f'''
-    <div class="status-footer" style="display:none;">
-    ''', unsafe_allow_html=True)
 
-    # 4. Status Footer
-    st.markdown(f'''
-    <div class="status-footer">
-        <div><span class="status-dot"></span> API ONLINE 2.6.0</div>
-        <div>UrbanGraph Tactical</div>
-    </div>
-    ''', unsafe_allow_html=True)
 
-    st.markdown('</div>', unsafe_allow_html=True)
 
+
+# Fin del archivo UrbanOS 2040 Tactical Console
