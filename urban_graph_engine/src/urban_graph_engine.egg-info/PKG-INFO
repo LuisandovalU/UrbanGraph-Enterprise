@@ -1,0 +1,47 @@
+Metadata-Version: 2.4
+Name: urban_graph_engine
+Version: 0.2.0
+Summary: UrbanGraph Engine: Intelligence-Driven Logistics Integrity
+Author-email: Luis Sandoval <luis@example.com>
+License: MIT
+Project-URL: Homepage, https://github.com/yourusername/urban_graph_engine
+Project-URL: Repository, https://github.com/yourusername/urban_graph_engine
+Project-URL: Issues, https://github.com/yourusername/urban_graph_engine/issues
+Keywords: logistics,routing,urban,safety,graph
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: streamlit
+Requires-Dist: osmnx
+Requires-Dist: geopandas
+Requires-Dist: requests
+Requires-Dist: pandas
+Requires-Dist: plotly
+Requires-Dist: psycopg2-binary
+Requires-Dist: python-dotenv
+Requires-Dist: httpx
+Requires-Dist: pyogrio
+Requires-Dist: rtree
+Requires-Dist: fiona
+Requires-Dist: shapely
+Requires-Dist: pyproj
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: pydantic
+Requires-Dist: networkx
+Requires-Dist: scipy
+Requires-Dist: numpy
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: black; extra == "dev"
+Requires-Dist: isort; extra == "dev"
+Requires-Dist: flake8; extra == "dev"
+Requires-Dist: pre-commit; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"

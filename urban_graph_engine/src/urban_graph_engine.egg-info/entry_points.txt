@@ -1,0 +1,2 @@
+[console_scripts]
+urban-graph = urban_graph_engine.cli:main

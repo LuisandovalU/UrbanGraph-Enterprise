@@ -6,6 +6,31 @@ URBANgraph is a mission-critical **Urban Integrity Engine** built for the most d
 
 ---
 
+## 🚀 Quick Start
+
+### Installation
+1. Clone the repository: `git clone <repo-url>`
+2. Navigate to the project: `cd UrbanGraph-Engine`
+3. Install dependencies: `pip install -r requirements.txt`
+4. (Optional) For development: `pip install -e urban_graph_engine/`
+
+### Usage
+- **CLI**: `urban-graph --help` (after installing)
+- **API**: Run `python -m urban_graph_engine.core.main` to start the FastAPI server
+- **Tests**: `pytest urban_graph_engine/tests/`
+
+### Project Structure
+- `urban_graph_engine/`: Main package with modular components
+  - `src/urban_graph_engine/`: Source code (core engine, services, etc.)
+  - `data/`: Data files and resources
+  - `tests/`: Unit and integration tests
+  - `docs/`: Documentation
+- Legacy files in root are preserved for compatibility.
+
+For detailed structure, see `urban_graph_engine/docs/structure.md`.
+
+---
+
 ## 🛑 The Economic Problem: The Hidden Cost of Urban Chaos
 Every year, high-value logistics enterprises lose millions of dollars due to incidents in "urban shadow zones"—areas where traditional navigation fails to account for safety and topological stress.
 - **Unquantified Risk**: Conventional APIs optimize for time, often leading fleets into high-risk bottlenecks.
