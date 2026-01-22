@@ -45,7 +45,8 @@ if os.path.exists(GEO_CACHE_FILE):
     try:
         with open(GEO_CACHE_FILE, "r") as f:
             GEO_CACHE = json.load(f)
-    except: pass
+    except (json.JSONDecodeError, OSError):
+        logger.warning("Failed to load GEO cache from '%s'; using empty cache.", GEO_CACHE_FILE)
 
 def save_geo_cache():
     with open(GEO_CACHE_FILE, "w") as f:
