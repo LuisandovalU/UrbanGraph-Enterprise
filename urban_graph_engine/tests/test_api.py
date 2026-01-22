@@ -1,9 +1,13 @@
 """Tests for API endpoints."""
-import pytest
+
+import os
+
 from fastapi.testclient import TestClient
+
 from urban_graph_engine.core.api import app
 
 client = TestClient(app)
+
 
 def test_health_endpoint():
     """Test health check."""
@@ -12,14 +16,16 @@ def test_health_endpoint():
     data = response.json()
     assert "status" in data
 
+
 def test_analyze_route():
     """Test analyze route (requires token)."""
-    # Assuming API_KEY is set
-    headers = {"access_token": "SANDOVAL-ENGINE-PRO-2040"}
+    # Get API key from environment variable
+    api_key = os.getenv("ACCESS_TOKEN", "SANDOVAL-ENGINE-PRO-2040")
+    headers = {"access_token": api_key}
     payload = {
         "origin": "WTC Ciudad de México",
         "destination": "Parque de los Venados",
-        "hurry_factor": 50.0
+        "hurry_factor": 50.0,
     }
     response = client.post("/api/v1/analyze", json=payload, headers=headers)
     # May fail if graph not loaded, but test structure
